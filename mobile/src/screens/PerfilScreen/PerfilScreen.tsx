@@ -62,10 +62,6 @@ export const PerfilScreen: React.FC<Props> = ({ navigation }) => {
             try {
               await UsuarioService.desativarConta(user.id);
               await logout();
-              navigation.getParent()?.reset({
-                index: 0,
-                routes: [{ name: 'Login' }],
-              });
               Alert.alert('Conta Desativada', 'Sua conta foi desativada com sucesso.');
             } catch (error: any) {
               Alert.alert('Erro', 'Não foi possível desativar a conta.');
@@ -84,10 +80,6 @@ export const PerfilScreen: React.FC<Props> = ({ navigation }) => {
         style: 'destructive',
         onPress: async () => {
           await logout();
-          navigation.getParent()?.reset({
-            index: 0,
-            routes: [{ name: 'Login' }],
-          });
         },
       },
     ]);

@@ -46,8 +46,10 @@ export const PlanosScreen: React.FC<Props> = ({ navigation }) => {
       ]);
       setPlanos(planosData);
       setCursos(cursosData);
-    } catch (error) {
-      console.error('Erro ao carregar planos:', error);
+    } catch (error: any) {
+      if (error?.response?.status !== 401) {
+        console.warn('Erro ao carregar planos:', error?.message || error);
+      }
     } finally {
       setCarregando(false);
     }

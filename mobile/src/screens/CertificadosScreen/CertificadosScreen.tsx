@@ -40,8 +40,10 @@ export const CertificadosScreen: React.FC = () => {
       }));
 
       setCertificados(vinculados);
-    } catch (error) {
-      console.error('Erro ao carregar certificados:', error);
+    } catch (error: any) {
+      if (error?.response?.status !== 401) {
+        console.warn('Erro ao carregar certificados:', error?.message || error);
+      }
     } finally {
       setCarregando(false);
       setAtualizando(false);

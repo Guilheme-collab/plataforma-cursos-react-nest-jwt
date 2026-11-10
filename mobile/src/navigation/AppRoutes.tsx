@@ -33,17 +33,25 @@ export const AppRoutes: React.FC = () => {
 
   return (
     <Stack.Navigator
-      initialRouteName={user ? 'Principal' : 'Login'}
       screenOptions={{
         headerShown: false,
         animation: 'slide_from_right',
       }}
     >
-      <Stack.Screen name="Login" component={LoginScreen} />
-      <Stack.Screen name="Registro" component={RegisterScreen} />
-      <Stack.Screen name="Principal" component={TabRoutes} />
-      <Stack.Screen name="CursoDetalhes" component={CursoDetalhesScreen} />
-      <Stack.Screen name="AulaPlayer" component={AulaPlayerScreen} />
+      {user ? (
+        // Rotas autenticadas do Aluno
+        <>
+          <Stack.Screen name="Principal" component={TabRoutes} />
+          <Stack.Screen name="CursoDetalhes" component={CursoDetalhesScreen} />
+          <Stack.Screen name="AulaPlayer" component={AulaPlayerScreen} />
+        </>
+      ) : (
+        // Rotas públicas de Autenticação
+        <>
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Registro" component={RegisterScreen} />
+        </>
+      )}
     </Stack.Navigator>
   );
 };

@@ -79,8 +79,10 @@ export const MinhasMatriculasScreen: React.FC<Props> = ({ navigation }) => {
       }
 
       setLista(formatados);
-    } catch (error) {
-      console.error('Erro ao carregar matrículas:', error);
+    } catch (error: any) {
+      if (error?.response?.status !== 401) {
+        console.warn('Erro ao carregar matrículas:', error?.message || error);
+      }
     } finally {
       setCarregando(false);
       setAtualizando(false);

@@ -57,6 +57,14 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+// Interceptor de resposta para tratar expiração de sessão
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 export const setApiBaseUrl = async (url: string): Promise<void> => {
   const cleanUrl = url.trim().replace(/\/+$/, ''); // Remove barras finais
   api.defaults.baseURL = cleanUrl;

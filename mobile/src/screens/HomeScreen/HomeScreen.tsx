@@ -34,6 +34,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const [menuLateralAberto, setMenuLateralAberto] = useState(false);
 
   const carregarDados = useCallback(async () => {
+    if (!user) {
+      setCarregando(false);
+      setAtualizando(false);
+      return;
+    }
+
     try {
       const [listaCursos, listaCategorias, listaMatriculas] = await Promise.all([
         CursoService.findAll(),
@@ -50,17 +56,22 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           .map((m) => m.cursoId);
         setMatriculasIds(minhas);
       }
-    } catch (error) {
-      console.error('Erro ao carregar catálogo:', error);
+    } catch (error: any) {
+      // Ignora 401 silenciosamente (ocorre se o usuário estiver saindo da sessão)
+      if (error?.response?.status !== 401) {
+        console.warn('Erro ao carregar catálogo:', error?.message || error);
+      }
     } finally {
       setCarregando(false);
       setAtualizando(false);
     }
-  }, [user?.id]);
+  }, [user]);
 
   useEffect(() => {
-    carregarDados();
-  }, [carregarDados]);
+    if (user) {
+      carregarDados();
+    }
+  }, [user, carregarDados]);
 
   const onRefresh = () => {
     setAtualizando(true);
