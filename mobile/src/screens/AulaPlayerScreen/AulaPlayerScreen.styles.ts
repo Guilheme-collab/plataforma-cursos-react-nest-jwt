@@ -101,7 +101,7 @@ export const styles = StyleSheet.create({
   },
   conteudoScroll: {
     padding: espacamento.lg,
-    paddingBottom: 140,
+    paddingBottom: 220, // Garante que o card de certificado e todos os botões fiquem confortavelmente visíveis
     gap: espacamento.lg,
   },
   cardInfoAula: {
@@ -168,22 +168,23 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: espacamento.md,
     gap: espacamento.sm,
   },
   botaoConcluidaAtiva: {
     backgroundColor: '#dcfce7',
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: cores.secundaria,
   },
   botaoConcluirTexto: {
     color: cores.branco,
     fontWeight: 'bold',
-    fontSize: 15,
+    fontSize: 14,
   },
   botaoConcluidaTextoAtivo: {
     color: cores.secundariaEscura,
     fontWeight: 'bold',
-    fontSize: 15,
+    fontSize: 14,
   },
   linhaNavegacao: {
     flexDirection: 'row',
@@ -231,16 +232,23 @@ export const styles = StyleSheet.create({
     textAlign: 'center',
   },
   botaoGerarCertificado: {
-    backgroundColor: cores.aviso,
-    paddingVertical: espacamento.sm,
-    paddingHorizontal: espacamento.lg,
+    backgroundColor: '#d97706',
+    height: 48,
     borderRadius: bordas.md,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginTop: espacamento.xs,
+    width: '100%',
+    shadowColor: '#d97706',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 5,
+    elevation: 3,
   },
   botaoGerarCertificadoTexto: {
     color: cores.branco,
     fontWeight: 'bold',
-    fontSize: 13,
+    fontSize: 15,
   },
   carregando: {
     flex: 1,

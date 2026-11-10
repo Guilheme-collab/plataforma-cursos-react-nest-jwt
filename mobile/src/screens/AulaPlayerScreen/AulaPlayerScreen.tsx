@@ -297,7 +297,7 @@ export const AulaPlayerScreen: React.FC<Props> = ({ route, navigation }) => {
                           : styles.botaoConcluirTexto
                       }
                     >
-                      {isConcluida ? 'Aula Concluída (Clique p/ Desmarcar)' : 'Marcar como Concluída'}
+                      {isConcluida ? 'Aula Concluída ✓ (Toque p/ Desmarcar)' : 'Marcar como Concluída'}
                     </Text>
                   </>
                 )}
