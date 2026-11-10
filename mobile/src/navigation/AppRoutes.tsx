@@ -1,0 +1,49 @@
+import React from 'react';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { LoginScreen } from '../screens/LoginScreen/LoginScreen';
+import { RegisterScreen } from '../screens/RegisterScreen/RegisterScreen';
+import { TabRoutes } from './TabRoutes';
+import { CursoDetalhesScreen } from '../screens/CursoDetalhesScreen/CursoDetalhesScreen';
+import { AulaPlayerScreen } from '../screens/AulaPlayerScreen/AulaPlayerScreen';
+import { useAuth } from '../contexts/AuthContext';
+import { ActivityIndicator, View, StyleSheet } from 'react-native';
+import { cores } from '../styles/theme';
+
+const Stack = createNativeStackNavigator();
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: cores.fundo,
+  },
+});
+
+export const AppRoutes: React.FC = () => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={cores.primaria} />
+      </View>
+    );
+  }
+
+  return (
+    <Stack.Navigator
+      initialRouteName={user ? 'Principal' : 'Login'}
+      screenOptions={{
+        headerShown: false,
+        animation: 'slide_from_right',
+      }}
+    >
+      <Stack.Screen name="Login" component={LoginScreen} />
+      <Stack.Screen name="Registro" component={RegisterScreen} />
+      <Stack.Screen name="Principal" component={TabRoutes} />
+      <Stack.Screen name="CursoDetalhes" component={CursoDetalhesScreen} />
+      <Stack.Screen name="AulaPlayer" component={AulaPlayerScreen} />
+    </Stack.Navigator>
+  );
+};

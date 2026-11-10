@@ -1,0 +1,183 @@
+import { StyleSheet } from 'react-native';
+import { cores, espacamento, bordas } from '../../styles/theme';
+
+export const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: cores.fundo,
+  },
+  cabecalho: {
+    backgroundColor: cores.branco,
+    paddingTop: 50,
+    paddingBottom: espacamento.md,
+    paddingHorizontal: espacamento.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: cores.borda,
+  },
+  titulo: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: cores.texto,
+  },
+  subtitulo: {
+    fontSize: 13,
+    color: cores.textoSecundario,
+    marginTop: 2,
+  },
+  conteudoScroll: {
+    padding: espacamento.lg,
+    gap: espacamento.md,
+  },
+  cardMatricula: {
+    backgroundColor: cores.fundoCard,
+    borderRadius: bordas.lg,
+    padding: espacamento.lg,
+    borderWidth: 1,
+    borderColor: cores.borda,
+    gap: espacamento.md,
+    shadowColor: cores.preto,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  cardTopo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  badgeStatusConcluido: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#dcfce7',
+    paddingHorizontal: espacamento.sm,
+    paddingVertical: 3,
+    borderRadius: bordas.sm,
+  },
+  badgeStatusConcluidoTexto: {
+    color: cores.secundariaEscura,
+    fontSize: 11,
+    fontWeight: 'bold',
+  },
+  badgeStatusAndamento: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: cores.destaqueBadge,
+    paddingHorizontal: espacamento.sm,
+    paddingVertical: 3,
+    borderRadius: bordas.sm,
+  },
+  badgeStatusAndamentoTexto: {
+    color: cores.primaria,
+    fontSize: 11,
+    fontWeight: 'bold',
+  },
+  cursoTitulo: {
+    fontSize: 17,
+    fontWeight: 'bold',
+    color: cores.texto,
+  },
+  secaoProgresso: {
+    gap: 6,
+  },
+  linhaProgressoInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  progressoTexto: {
+    fontSize: 12,
+    color: cores.textoSecundario,
+  },
+  progressoPorcentagem: {
+    fontSize: 13,
+    fontWeight: 'bold',
+    color: cores.texto,
+  },
+  trilhoBarra: {
+    height: 8,
+    borderRadius: bordas.redonda,
+    backgroundColor: cores.cinzaClaro,
+    overflow: 'hidden',
+  },
+  barraPreenchida: {
+    height: '100%',
+    backgroundColor: cores.primaria,
+    borderRadius: bordas.redonda,
+  },
+  barraPreenchidaCompleta: {
+    backgroundColor: cores.secundaria,
+  },
+  cardRodape: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: espacamento.sm,
+    borderTopWidth: 1,
+    borderTopColor: cores.cinzaClaro,
+  },
+  dataMatricula: {
+    fontSize: 12,
+    color: cores.cinza,
+  },
+  botaoAcessar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: cores.primaria,
+    paddingHorizontal: espacamento.md,
+    paddingVertical: espacamento.sm,
+    borderRadius: bordas.md,
+  },
+  botaoAcessarTexto: {
+    color: cores.branco,
+    fontWeight: 'bold',
+    fontSize: 13,
+  },
+  estadoVazio: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: espacamento.xxl,
+    gap: espacamento.md,
+    marginTop: espacamento.xl,
+  },
+  iconeVazio: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: cores.destaqueBadge,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  vazioTitulo: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: cores.texto,
+  },
+  vazioDescricao: {
+    fontSize: 14,
+    color: cores.textoSecundario,
+    textAlign: 'center',
+    lineHeight: 20,
+    paddingHorizontal: espacamento.lg,
+  },
+  botaoExplorarCursos: {
+    backgroundColor: cores.primaria,
+    paddingHorizontal: espacamento.xl,
+    paddingVertical: espacamento.md,
+    borderRadius: bordas.md,
+    marginTop: espacamento.sm,
+  },
+  botaoExplorarCursosTexto: {
+    color: cores.branco,
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+  carregando: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});
