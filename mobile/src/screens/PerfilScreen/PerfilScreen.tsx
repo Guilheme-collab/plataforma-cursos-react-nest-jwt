@@ -4,12 +4,10 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  TextInput,
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
-import { setApiBaseUrl, getApiBaseUrl } from '../../services/api';
 import { MatriculaService } from '../../services/matricula.service';
 import { ProgressoService } from '../../services/progresso.service';
 import { CertificadoService } from '../../services/certificado.service';
@@ -26,7 +24,6 @@ export const PerfilScreen: React.FC<Props> = ({ navigation }) => {
   const [totalMatriculas, setTotalMatriculas] = useState(0);
   const [totalAulasConcluidas, setTotalAulasConcluidas] = useState(0);
   const [totalCertificados, setTotalCertificados] = useState(0);
-  const [apiUrl, setApiUrl] = useState(getApiBaseUrl() || 'http://10.0.2.2:3000');
 
   const carregarEstatisticas = useCallback(async () => {
     if (!user?.id) return;
@@ -50,12 +47,6 @@ export const PerfilScreen: React.FC<Props> = ({ navigation }) => {
   useEffect(() => {
     carregarEstatisticas();
   }, [carregarEstatisticas]);
-
-  const handleSalvarApiUrl = () => {
-    if (!apiUrl.trim()) return;
-    setApiBaseUrl(apiUrl.trim());
-    Alert.alert('Configuração Salva', `Endereço da API atualizado para: ${apiUrl.trim()}`);
-  };
 
   const handleDesativarConta = () => {
     Alert.alert(
@@ -112,7 +103,17 @@ export const PerfilScreen: React.FC<Props> = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <View style={styles.cabecalho}>
+        <TouchableOpacity
+          style={styles.botaoVoltar}
+          onPress={() => navigation.navigate('Início')}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="arrow-back" size={22} color={cores.texto} />
+        </TouchableOpacity>
+
         <Text style={styles.titulo}>Meu Perfil</Text>
+
+        <View style={styles.espacadorCabecalho} />
       </View>
 
       <ScrollView contentContainerStyle={styles.conteudoScroll} showsVerticalScrollIndicator={false}>
@@ -152,25 +153,55 @@ export const PerfilScreen: React.FC<Props> = ({ navigation }) => {
           </View>
         </View>
 
-        <View style={styles.cardConfiguracao}>
-          <Text style={styles.tituloSecao}>Endereço do Servidor (API)</Text>
-          <Text style={styles.descricaoConfig}>
-            Configure o IP do backend para testes em emuladores ou dispositivos físicos:
-          </Text>
-          <TextInput
-            style={styles.inputApiUrl}
-            value={apiUrl}
-            onChangeText={setApiUrl}
-            placeholder="http://10.0.2.2:3000"
-            placeholderTextColor={cores.cinza}
-            autoCapitalize="none"
-          />
+        <View style={styles.cardSincronizacao}>
+          <View style={styles.iconeSincronizacao}>
+            <Ionicons name="cloud-done-outline" size={20} color="#15803D" />
+          </View>
+          <View style={styles.sincronizacaoInfo}>
+            <Text style={styles.sincronizacaoTitulo}>Sincronizado com a Web</Text>
+            <Text style={styles.sincronizacaoDescricao}>
+              Suas matrículas, aulas e certificados são sincronizados com o painel web em tempo real.
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.secaoAcoes}>
+          <Text style={styles.tituloSecao}>Navegação Rápida</Text>
+
           <TouchableOpacity
-            style={styles.botaoSalvarApi}
-            onPress={handleSalvarApiUrl}
-            activeOpacity={0.85}
+            style={styles.itemAcaoNavegacao}
+            onPress={() => navigation.navigate('Matrículas')}
+            activeOpacity={0.8}
           >
-            <Text style={styles.botaoSalvarApiTexto}>Salvar Endereço</Text>
+            <View style={styles.itemAcaoEsquerda}>
+              <Ionicons name="school-outline" size={20} color={cores.primaria} />
+              <Text style={styles.itemAcaoTexto}>Minhas Matrículas e Cursos</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={cores.cinza} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.itemAcaoNavegacao}
+            onPress={() => navigation.navigate('Certificados')}
+            activeOpacity={0.8}
+          >
+            <View style={styles.itemAcaoEsquerda}>
+              <Ionicons name="ribbon-outline" size={20} color={cores.primaria} />
+              <Text style={styles.itemAcaoTexto}>Meus Certificados Conquistados</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={cores.cinza} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.itemAcaoNavegacao}
+            onPress={() => navigation.navigate('Planos')}
+            activeOpacity={0.8}
+          >
+            <View style={styles.itemAcaoEsquerda}>
+              <Ionicons name="card-outline" size={20} color={cores.primaria} />
+              <Text style={styles.itemAcaoTexto}>Planos e Assinaturas</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={cores.cinza} />
           </TouchableOpacity>
         </View>
 

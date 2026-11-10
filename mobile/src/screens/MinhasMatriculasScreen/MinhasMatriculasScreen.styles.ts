@@ -26,6 +26,7 @@ export const styles = StyleSheet.create({
   },
   conteudoScroll: {
     padding: espacamento.lg,
+    paddingBottom: 130,
     gap: espacamento.md,
   },
   cardMatricula: {

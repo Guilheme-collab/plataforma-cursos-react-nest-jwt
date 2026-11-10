@@ -1,0 +1,165 @@
+import { StyleSheet, Dimensions } from 'react-native';
+import { cores, espacamento, bordas } from '../../styles/theme';
+
+const { width } = Dimensions.get('window');
+const DRAWER_WIDTH = Math.min(width * 0.8, 320);
+
+export const styles = StyleSheet.create({
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    flexDirection: 'row',
+  },
+  backdropTouchable: {
+    flex: 1,
+  },
+  drawerContainer: {
+    width: DRAWER_WIDTH,
+    backgroundColor: cores.branco,
+    height: '100%',
+    shadowColor: cores.preto,
+    shadowOffset: { width: 4, height: 0 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 16,
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  drawerCabecalho: {
+    backgroundColor: cores.primaria,
+    paddingTop: 54,
+    paddingBottom: espacamento.lg,
+    paddingHorizontal: espacamento.lg,
+    position: 'relative',
+  },
+  botaoFechar: {
+    position: 'absolute',
+    top: 48,
+    right: espacamento.md,
+    width: 36,
+    height: 36,
+    borderRadius: bordas.redonda,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatar: {
+    width: 56,
+    height: 56,
+    borderRadius: bordas.redonda,
+    backgroundColor: cores.branco,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: espacamento.sm,
+    shadowColor: cores.preto,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  avatarTexto: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: cores.primaria,
+  },
+  nomeUsuario: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: cores.branco,
+    marginBottom: 2,
+  },
+  emailUsuario: {
+    fontSize: 13,
+    color: 'rgba(255, 255, 255, 0.85)',
+    marginBottom: espacamento.xs,
+  },
+  badgeAluno: {
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    paddingHorizontal: espacamento.sm,
+    paddingVertical: 3,
+    borderRadius: bordas.sm,
+    marginTop: 4,
+  },
+  badgeAlunoTexto: {
+    color: cores.branco,
+    fontSize: 11,
+    fontWeight: 'bold',
+  },
+  drawerCorpo: {
+    flex: 1,
+    paddingVertical: espacamento.md,
+  },
+  itemMenu: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: espacamento.md,
+    paddingHorizontal: espacamento.lg,
+    gap: espacamento.md,
+  },
+  itemMenuAtivo: {
+    backgroundColor: cores.destaqueBadge,
+    borderLeftWidth: 4,
+    borderLeftColor: cores.primaria,
+  },
+  itemMenuIconeContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: bordas.md,
+    backgroundColor: '#F1F5F9',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  itemMenuIconeContainerAtivo: {
+    backgroundColor: cores.primaria,
+  },
+  itemMenuTexto: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: cores.texto,
+    flex: 1,
+  },
+  itemMenuTextoAtivo: {
+    color: cores.primaria,
+    fontWeight: 'bold',
+  },
+  divisor: {
+    height: 1,
+    backgroundColor: cores.borda,
+    marginVertical: espacamento.sm,
+    marginHorizontal: espacamento.lg,
+  },
+  statusSincronizacao: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: espacamento.lg,
+    paddingVertical: espacamento.sm,
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: cores.secundaria,
+  },
+  statusTexto: {
+    fontSize: 12,
+    color: cores.textoSecundario,
+  },
+  drawerRodape: {
+    padding: espacamento.lg,
+    borderTopWidth: 1,
+    borderTopColor: cores.borda,
+  },
+  botaoSair: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: espacamento.sm,
+    paddingVertical: espacamento.sm,
+  },
+  botaoSairTexto: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: cores.perigo,
+  },
+});

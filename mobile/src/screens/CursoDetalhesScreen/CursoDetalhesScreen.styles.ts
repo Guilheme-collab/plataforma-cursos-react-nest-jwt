@@ -18,12 +18,18 @@ export const styles = StyleSheet.create({
     borderBottomColor: cores.borda,
   },
   botaoVoltar: {
-    width: 40,
     height: 40,
-    borderRadius: bordas.redonda,
-    backgroundColor: cores.fundo,
-    justifyContent: 'center',
+    paddingHorizontal: espacamento.sm,
+    borderRadius: bordas.md,
+    backgroundColor: '#F1F5F9',
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: 4,
+  },
+  botaoVoltarTexto: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: cores.texto,
   },
   tituloBarra: {
     fontSize: 16,
@@ -34,10 +40,11 @@ export const styles = StyleSheet.create({
     marginHorizontal: espacamento.sm,
   },
   espacadorBarra: {
-    width: 40,
+    width: 65,
   },
   conteudoScroll: {
     padding: espacamento.lg,
+    paddingBottom: 160, // Permite rolar bem acima da barra inferior para ver todas as avaliações
     gap: espacamento.lg,
   },
   cardBanner: {

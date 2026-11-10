@@ -12,7 +12,8 @@
       "supportsTablet": true
     },
     "android": {
-      "package": "com.plataformacursos.app"
+      "package": "com.plataformacursos.app",
+      "softwareKeyboardLayoutMode": "resize"
     },
     "plugins": [
       "expo-asset"

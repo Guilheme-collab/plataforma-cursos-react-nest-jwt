@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Platform } from 'react-native';
 import { cores, espacamento, bordas } from '../../styles/theme';
 
 export const styles = StyleSheet.create({
@@ -6,14 +6,37 @@ export const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: cores.fundo,
   },
+  topoBarra: {
+    paddingTop: Platform.OS === 'ios' ? 50 : 40,
+    paddingHorizontal: espacamento.lg,
+    paddingBottom: espacamento.sm,
+    backgroundColor: cores.fundo,
+  },
+  botaoVoltarTopo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    alignSelf: 'flex-start',
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: bordas.md,
+    backgroundColor: cores.branco,
+    borderWidth: 1,
+    borderColor: cores.borda,
+  },
+  botaoVoltarTopoTexto: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: cores.texto,
+  },
   scrollContent: {
     flexGrow: 1,
-    justifyContent: 'center',
-    padding: espacamento.lg,
+    paddingHorizontal: espacamento.lg,
+    paddingBottom: 150, // Permite que a tela suba bem acima do teclado
   },
   card: {
     backgroundColor: cores.fundoCard,
-    borderRadius: bordas.lg,
+    borderRadius: bordas.xl,
     padding: espacamento.xl,
     shadowColor: cores.preto,
     shadowOffset: { width: 0, height: 4 },
@@ -22,6 +45,7 @@ export const styles = StyleSheet.create({
     elevation: 4,
     borderWidth: 1,
     borderColor: cores.borda,
+    marginTop: espacamento.sm,
   },
   cabecalho: {
     alignItems: 'center',
@@ -38,12 +62,12 @@ export const styles = StyleSheet.create({
     marginBottom: espacamento.xs,
   },
   titulo: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: 'bold',
     color: cores.texto,
   },
   subtitulo: {
-    fontSize: 14,
+    fontSize: 13,
     color: cores.textoSecundario,
     textAlign: 'center',
   },
@@ -66,7 +90,7 @@ export const styles = StyleSheet.create({
     borderRadius: bordas.md,
     backgroundColor: cores.branco,
     paddingHorizontal: espacamento.md,
-    height: 50,
+    height: 52,
   },
   input: {
     flex: 1,
@@ -74,13 +98,8 @@ export const styles = StyleSheet.create({
     color: cores.texto,
     paddingHorizontal: espacamento.sm,
   },
-  linhaSenhas: {
-    flexDirection: 'row',
-    gap: espacamento.sm,
-  },
-  colunaMetade: {
-    flex: 1,
-    gap: espacamento.xs,
+  botaoOlho: {
+    padding: 6,
   },
   botao: {
     height: 52,
@@ -88,7 +107,7 @@ export const styles = StyleSheet.create({
     backgroundColor: cores.primaria,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: espacamento.sm,
+    marginTop: espacamento.md,
     shadowColor: cores.primaria,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
@@ -103,11 +122,44 @@ export const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
   },
+  erroContainer: {
+    backgroundColor: '#FEE2E2',
+    borderWidth: 1,
+    borderColor: '#F87171',
+    borderRadius: bordas.md,
+    padding: espacamento.sm,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: espacamento.xs,
+    marginTop: espacamento.xs,
+  },
+  erroTexto: {
+    color: '#B91C1C',
+    fontSize: 13,
+    flex: 1,
+  },
+  sucessoContainer: {
+    backgroundColor: '#DCFCE7',
+    borderWidth: 1,
+    borderColor: '#4ADE80',
+    borderRadius: bordas.md,
+    padding: espacamento.sm,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: espacamento.xs,
+    marginTop: espacamento.xs,
+  },
+  sucessoTexto: {
+    color: '#15803D',
+    fontSize: 13,
+    fontWeight: '600',
+    flex: 1,
+  },
   rodape: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: espacamento.xl,
+    marginTop: espacamento.lg,
     gap: espacamento.xs,
   },
   rodapeTexto: {

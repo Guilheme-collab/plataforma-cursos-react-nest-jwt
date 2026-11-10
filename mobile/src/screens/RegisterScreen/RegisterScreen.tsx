@@ -8,7 +8,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
@@ -25,45 +24,64 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) =>
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [confirmarSenha, setConfirmarSenha] = useState('');
+  const [mostrarSenha, setMostrarSenha] = useState(false);
+  const [mostrarConfirmar, setMostrarConfirmar] = useState(false);
   const [carregando, setCarregando] = useState(false);
+  const [mensagemErro, setMensagemErro] = useState<string | null>(null);
+  const [mensagemSucesso, setMensagemSucesso] = useState<string | null>(null);
+
+  const EMAIL_DOMAIN_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9-]{2,}\.[a-zA-Z]{2,}(\.[a-zA-Z]{2,})?$/;
 
   const handleCadastrar = async () => {
-    if (!nomeCompleto.trim() || !email.trim() || !senha.trim() || !confirmarSenha.trim()) {
-      Alert.alert('Atenção', 'Por favor, preencha todos os campos do formulário.');
+    setMensagemErro(null);
+    setMensagemSucesso(null);
+
+    if (!nomeCompleto.trim()) {
+      setMensagemErro('Por favor, informe seu nome completo.');
       return;
     }
 
     if (nomeCompleto.trim().length < 3) {
-      Alert.alert('Atenção', 'O nome completo deve conter no mínimo 3 caracteres.');
+      setMensagemErro('O nome completo precisa ter pelo menos 3 caracteres.');
       return;
     }
 
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9-]{2,}\.[a-zA-Z]{2,}(\.[a-zA-Z]{2,})?$/;
-    if (!emailRegex.test(email.trim())) {
-      Alert.alert('E-mail inválido', 'Informe um endereço de e-mail válido (ex: aluno@dominio.com).');
+    if (!email.trim()) {
+      setMensagemErro('Por favor, informe seu e-mail.');
       return;
     }
 
-    if (senha.length < 6) {
-      Alert.alert('Senha muito curta', 'A senha deve possuir no mínimo 6 caracteres.');
+    if (!EMAIL_DOMAIN_REGEX.test(email.trim())) {
+      setMensagemErro('Por favor, informe um e-mail com domínio válido (ex: aluno@gmail.com).');
+      return;
+    }
+
+    if (!senha.trim()) {
+      setMensagemErro('Por favor, informe uma senha.');
+      return;
+    }
+
+    if (senha.trim().length < 6) {
+      setMensagemErro('A senha precisa ter pelo menos 6 caracteres.');
       return;
     }
 
     if (senha !== confirmarSenha) {
-      Alert.alert('Senhas não coincidem', 'A confirmação de senha é diferente da senha digitada.');
+      setMensagemErro('A confirmação de senha não coincide com a senha digitada.');
       return;
     }
 
     try {
       setCarregando(true);
       await register(nomeCompleto.trim(), email.trim(), senha);
-      Alert.alert('Conta criada!', 'Seu cadastro foi realizado com sucesso. Bem-vindo!', [
-        { text: 'Acessar', onPress: () => navigation.replace('Principal') },
-      ]);
+      setMensagemSucesso('🎉 Conta criada com sucesso! Entrando na plataforma...');
+      setTimeout(() => {
+        navigation.replace('Principal');
+      }, 1200);
     } catch (error: any) {
       console.error('Erro no cadastro:', error);
       const msg = error.response?.data?.message || 'Erro ao realizar cadastro.';
-      Alert.alert('Não foi possível cadastrar', Array.isArray(msg) ? msg[0] : msg);
+      setMensagemErro(Array.isArray(msg) ? msg[0] : msg);
     } finally {
       setCarregando(false);
     }
@@ -73,10 +91,23 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) =>
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0}
     >
+      <View style={styles.topoBarra}>
+        <TouchableOpacity
+          style={styles.botaoVoltarTopo}
+          onPress={() => navigation.goBack()}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="arrow-back" size={20} color={cores.texto} />
+          <Text style={styles.botaoVoltarTopoTexto}>Voltar ao Login</Text>
+        </TouchableOpacity>
+      </View>
+
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
+        automaticallyAdjustKeyboardInsets={true}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.card}>
@@ -110,7 +141,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) =>
                 <Ionicons name="mail-outline" size={20} color={cores.cinza} />
                 <TextInput
                   style={styles.input}
-                  placeholder="seu.email@exemplo.com"
+                  placeholder="aluno@exemplo.com"
                   placeholderTextColor={cores.cinza}
                   keyboardType="email-address"
                   autoCapitalize="none"
@@ -120,35 +151,69 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) =>
               </View>
             </View>
 
-            <View style={styles.linhaSenhas}>
-              <View style={styles.colunaMetade}>
-                <Text style={styles.label}>Senha</Text>
-                <View style={styles.inputContainer}>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Mín. 6 dígitos"
-                    placeholderTextColor={cores.cinza}
-                    secureTextEntry
-                    value={senha}
-                    onChangeText={setSenha}
+            <View style={styles.grupoInput}>
+              <Text style={styles.label}>Senha (mínimo 6 caracteres)</Text>
+              <View style={styles.inputContainer}>
+                <Ionicons name="lock-closed-outline" size={20} color={cores.cinza} />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Digite sua senha"
+                  placeholderTextColor={cores.cinza}
+                  secureTextEntry={!mostrarSenha}
+                  value={senha}
+                  onChangeText={setSenha}
+                />
+                <TouchableOpacity
+                  style={styles.botaoOlho}
+                  onPress={() => setMostrarSenha(!mostrarSenha)}
+                >
+                  <Ionicons
+                    name={mostrarSenha ? 'eye-off-outline' : 'eye-outline'}
+                    size={20}
+                    color={cores.cinza}
                   />
-                </View>
-              </View>
-
-              <View style={styles.colunaMetade}>
-                <Text style={styles.label}>Confirmar</Text>
-                <View style={styles.inputContainer}>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Repita a senha"
-                    placeholderTextColor={cores.cinza}
-                    secureTextEntry
-                    value={confirmarSenha}
-                    onChangeText={setConfirmarSenha}
-                  />
-                </View>
+                </TouchableOpacity>
               </View>
             </View>
+
+            <View style={styles.grupoInput}>
+              <Text style={styles.label}>Confirmar Senha</Text>
+              <View style={styles.inputContainer}>
+                <Ionicons name="lock-closed-outline" size={20} color={cores.cinza} />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Repita a senha digitada"
+                  placeholderTextColor={cores.cinza}
+                  secureTextEntry={!mostrarConfirmar}
+                  value={confirmarSenha}
+                  onChangeText={setConfirmarSenha}
+                />
+                <TouchableOpacity
+                  style={styles.botaoOlho}
+                  onPress={() => setMostrarConfirmar(!mostrarConfirmar)}
+                >
+                  <Ionicons
+                    name={mostrarConfirmar ? 'eye-off-outline' : 'eye-outline'}
+                    size={20}
+                    color={cores.cinza}
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {mensagemErro && (
+              <View style={styles.erroContainer}>
+                <Ionicons name="alert-circle-outline" size={18} color="#B91C1C" />
+                <Text style={styles.erroTexto}>{mensagemErro}</Text>
+              </View>
+            )}
+
+            {mensagemSucesso && (
+              <View style={styles.sucessoContainer}>
+                <Ionicons name="checkmark-circle-outline" size={18} color="#15803D" />
+                <Text style={styles.sucessoTexto}>{mensagemSucesso}</Text>
+              </View>
+            )}
 
             <TouchableOpacity
               style={[styles.botao, carregando && styles.botaoDesabilitado]}

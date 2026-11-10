@@ -16,6 +16,7 @@ import { MatriculaService } from '../../services/matricula.service';
 import { Curso, Categoria } from '../../models';
 import { cores } from '../../styles/theme';
 import { styles } from './HomeScreen.styles';
+import { MenuLateral } from '../../components/MenuLateral/MenuLateral';
 
 interface HomeScreenProps {
   navigation: any;
@@ -30,6 +31,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const [termoBusca, setTermoBusca] = useState('');
   const [carregando, setCarregando] = useState(true);
   const [atualizando, setAtualizando] = useState(false);
+  const [menuLateralAberto, setMenuLateralAberto] = useState(false);
 
   const carregarDados = useCallback(async () => {
     try {
@@ -83,12 +85,30 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+      <MenuLateral
+        visivel={menuLateralAberto}
+        aoFechar={() => setMenuLateralAberto(false)}
+        navigation={navigation}
+        rotaAtiva="Início"
+      />
+
       <View style={styles.cabecalho}>
         <View style={styles.cabecalhoLinha}>
-          <View>
-            <Text style={styles.saudacao}>Bem-vindo de volta,</Text>
-            <Text style={styles.nomeUsuario}>{user?.nomeCompleto || 'Estudante'}</Text>
+          <View style={styles.cabecalhoEsquerda}>
+            <TouchableOpacity
+              style={styles.botaoMenu}
+              onPress={() => setMenuLateralAberto(true)}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="menu-outline" size={26} color={cores.texto} />
+            </TouchableOpacity>
+
+            <View>
+              <Text style={styles.saudacao}>Bem-vindo de volta,</Text>
+              <Text style={styles.nomeUsuario}>{user?.nomeCompleto || 'Estudante'}</Text>
+            </View>
           </View>
+
           <TouchableOpacity
             style={styles.avatar}
             onPress={() => navigation.navigate('Perfil')}
@@ -210,7 +230,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                   <TouchableOpacity
                     key={curso.id}
                     style={styles.cardCurso}
-                    activeOpacity={0.85}
+                    activeOpacity={0.9}
                     onPress={() => navigation.navigate('CursoDetalhes', { cursoId: curso.id })}
                   >
                     <View style={styles.cardCursoTopo}>
@@ -232,27 +252,41 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                       {curso.descricao}
                     </Text>
 
-                    <View style={styles.cursoRodape}>
-                      <View style={styles.cursoMetadados}>
-                        <View style={styles.metadadoItem}>
-                          <Ionicons name="bar-chart-outline" size={14} color={cores.textoSecundario} />
-                          <Text style={styles.metadadoTexto}>{curso.nivel}</Text>
-                        </View>
-                        <View style={styles.metadadoItem}>
-                          <Ionicons name="play-circle-outline" size={14} color={cores.textoSecundario} />
-                          <Text style={styles.metadadoTexto}>{curso.totalAulas || 0} aulas</Text>
-                        </View>
-                        <View style={styles.metadadoItem}>
-                          <Ionicons name="time-outline" size={14} color={cores.textoSecundario} />
-                          <Text style={styles.metadadoTexto}>{curso.totalHoras || 0}h</Text>
-                        </View>
+                    <View style={styles.cursoMetadadosLinha}>
+                      <View style={styles.metadadoItem}>
+                        <Ionicons name="bar-chart-outline" size={14} color={cores.textoSecundario} />
+                        <Text style={styles.metadadoTexto}>{curso.nivel}</Text>
                       </View>
+                      <View style={styles.metadadoItem}>
+                        <Ionicons name="play-circle-outline" size={14} color={cores.textoSecundario} />
+                        <Text style={styles.metadadoTexto}>{curso.totalAulas || 0} aulas</Text>
+                      </View>
+                      <View style={styles.metadadoItem}>
+                        <Ionicons name="time-outline" size={14} color={cores.textoSecundario} />
+                        <Text style={styles.metadadoTexto}>{curso.totalHoras || 0}h</Text>
+                      </View>
+                    </View>
 
-                      <View style={styles.botaoAcessar}>
-                        <Text style={styles.botaoAcessarTexto}>
-                          {matriculado ? 'Acessar' : 'Ver Detalhes'}
+                    <View style={styles.cursoRodapeBotaoLinha}>
+                      <View
+                        style={[
+                          styles.botaoAcessarCard,
+                          matriculado && styles.botaoAcessarCardMatriculado,
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.botaoAcessarCardTexto,
+                            matriculado && styles.botaoAcessarCardTextoMatriculado,
+                          ]}
+                        >
+                          {matriculado ? 'Acessar Aulas' : 'Ver Detalhes do Curso'}
                         </Text>
-                        <Ionicons name="arrow-forward" size={15} color={cores.primaria} />
+                        <Ionicons
+                          name="arrow-forward"
+                          size={15}
+                          color={matriculado ? cores.secundariaEscura : cores.primaria}
+                        />
                       </View>
                     </View>
                   </TouchableOpacity>

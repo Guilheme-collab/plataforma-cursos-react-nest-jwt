@@ -20,12 +20,26 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: espacamento.md,
   },
+  cabecalhoEsquerda: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: espacamento.sm,
+    flex: 1,
+  },
+  botaoMenu: {
+    width: 44,
+    height: 44,
+    borderRadius: bordas.md,
+    backgroundColor: '#F1F5F9',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   saudacao: {
-    fontSize: 14,
+    fontSize: 13,
     color: cores.textoSecundario,
   },
   nomeUsuario: {
-    fontSize: 22,
+    fontSize: 19,
     fontWeight: 'bold',
     color: cores.texto,
   },
@@ -65,6 +79,7 @@ export const styles = StyleSheet.create({
   },
   conteudoScroll: {
     padding: espacamento.lg,
+    paddingBottom: 120, // Garante que o último card nunca seja cortado pela barra inferior
     gap: espacamento.lg,
   },
   linhaEstatisticas: {
@@ -119,10 +134,11 @@ export const styles = StyleSheet.create({
   scrollCategorias: {
     flexDirection: 'row',
     gap: espacamento.sm,
+    paddingRight: espacamento.xl,
   },
   chipCategoria: {
     paddingHorizontal: espacamento.md,
-    paddingVertical: espacamento.sm,
+    paddingVertical: 8,
     borderRadius: bordas.redonda,
     backgroundColor: cores.branco,
     borderWidth: 1,
@@ -131,11 +147,16 @@ export const styles = StyleSheet.create({
   chipCategoriaAtivo: {
     backgroundColor: cores.primaria,
     borderColor: cores.primaria,
+    elevation: 2,
+    shadowColor: cores.primaria,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
   },
   chipTexto: {
     fontSize: 13,
     color: cores.textoSecundario,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   chipTextoAtivo: {
     color: cores.branco,
@@ -147,7 +168,7 @@ export const styles = StyleSheet.create({
   cardCurso: {
     backgroundColor: cores.fundoCard,
     borderRadius: bordas.lg,
-    padding: espacamento.lg,
+    padding: espacamento.md,
     borderWidth: 1,
     borderColor: cores.borda,
     shadowColor: cores.preto,
@@ -161,11 +182,13 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: espacamento.xs,
   },
   badgeCategoria: {
     backgroundColor: cores.destaqueBadge,
     paddingHorizontal: espacamento.sm,
-    paddingVertical: 3,
+    paddingVertical: 4,
     borderRadius: bordas.sm,
   },
   badgeCategoriaTexto: {
@@ -179,7 +202,7 @@ export const styles = StyleSheet.create({
     gap: 4,
     backgroundColor: '#d1fae5',
     paddingHorizontal: espacamento.sm,
-    paddingVertical: 3,
+    paddingVertical: 4,
     borderRadius: bordas.sm,
   },
   badgeMatriculadoTexto: {
@@ -191,25 +214,19 @@ export const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: 'bold',
     color: cores.texto,
+    lineHeight: 22,
   },
   cursoDescricao: {
     fontSize: 13,
     color: cores.textoSecundario,
     lineHeight: 18,
   },
-  cursoRodape: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingTop: espacamento.sm,
-    borderTopWidth: 1,
-    borderTopColor: cores.cinzaClaro,
-    marginTop: espacamento.xs,
-  },
-  cursoMetadados: {
+  cursoMetadadosLinha: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexWrap: 'wrap',
     gap: espacamento.md,
+    paddingTop: espacamento.xs,
   },
   metadadoItem: {
     flexDirection: 'row',
@@ -219,16 +236,33 @@ export const styles = StyleSheet.create({
   metadadoTexto: {
     fontSize: 12,
     color: cores.textoSecundario,
+    fontWeight: '500',
   },
-  botaoAcessar: {
+  cursoRodapeBotaoLinha: {
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+    paddingTop: espacamento.sm,
+    marginTop: espacamento.xs,
+  },
+  botaoAcessarCard: {
     flexDirection: 'row',
+    justifyContent: 'center',
     alignItems: 'center',
-    gap: 4,
+    gap: 6,
+    backgroundColor: cores.destaqueBadge,
+    paddingVertical: 10,
+    borderRadius: bordas.md,
   },
-  botaoAcessarTexto: {
+  botaoAcessarCardMatriculado: {
+    backgroundColor: '#DCFCE7',
+  },
+  botaoAcessarCardTexto: {
     fontSize: 13,
     fontWeight: 'bold',
     color: cores.primaria,
+  },
+  botaoAcessarCardTextoMatriculado: {
+    color: cores.secundariaEscura,
   },
   estadoVazio: {
     alignItems: 'center',

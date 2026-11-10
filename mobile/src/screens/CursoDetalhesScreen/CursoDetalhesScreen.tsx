@@ -192,7 +192,8 @@ export const CursoDetalhesScreen: React.FC<Props> = ({ route, navigation }) => {
           onPress={() => navigation.goBack()}
           activeOpacity={0.8}
         >
-          <Ionicons name="arrow-back" size={22} color={cores.texto} />
+          <Ionicons name="arrow-back" size={20} color={cores.texto} />
+          <Text style={styles.botaoVoltarTexto}>Voltar</Text>
         </TouchableOpacity>
         <Text style={styles.tituloBarra} numberOfLines={1}>
           {curso.titulo}

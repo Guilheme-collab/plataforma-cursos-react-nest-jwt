@@ -22,12 +22,18 @@ export const styles = StyleSheet.create({
     borderBottomColor: cores.borda,
   },
   botaoVoltar: {
-    width: 40,
     height: 40,
-    borderRadius: bordas.redonda,
-    backgroundColor: cores.fundo,
-    justifyContent: 'center',
+    paddingHorizontal: espacamento.sm,
+    borderRadius: bordas.md,
+    backgroundColor: '#F1F5F9',
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: 4,
+  },
+  botaoVoltarTexto: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: cores.texto,
   },
   tituloBarra: {
     fontSize: 16,
@@ -38,7 +44,7 @@ export const styles = StyleSheet.create({
     marginHorizontal: espacamento.sm,
   },
   espacadorBarra: {
-    width: 40,
+    width: 65,
   },
   areaPlayerPortrait: {
     width: '100%',
@@ -58,7 +64,11 @@ export const styles = StyleSheet.create({
     position: 'relative',
   },
   playerOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     backgroundColor: 'rgba(0, 0, 0, 0.4)',
     justifyContent: 'center',
     alignItems: 'center',
@@ -91,6 +101,7 @@ export const styles = StyleSheet.create({
   },
   conteudoScroll: {
     padding: espacamento.lg,
+    paddingBottom: 140,
     gap: espacamento.lg,
   },
   cardInfoAula: {

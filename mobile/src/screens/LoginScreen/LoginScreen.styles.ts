@@ -10,6 +10,7 @@ export const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'center',
     padding: espacamento.lg,
+    paddingBottom: 120,
   },
   card: {
     backgroundColor: cores.fundoCard,

@@ -1,13 +1,35 @@
 import axios from 'axios';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Constants from 'expo-constants';
 
 export const STORAGE_KEY_API_URL = '@plataforma_api_url';
 
-// URL padrão:
-// No emulador Android, 10.0.2.2 mapeia para o localhost do host
-// Em outros ambientes, padrão localhost
-export const DEFAULT_URL = Platform.OS === 'android' ? 'http://10.0.2.2:3000' : 'http://localhost:3000';
+function resolveDefaultApiUrl(): string {
+  if (Platform.OS === 'web') {
+    return 'http://localhost:3000';
+  }
+
+  // No celular físico via Expo Go, detecta automaticamente o IP do seu computador na rede
+  try {
+    const hostUri =
+      Constants.expoConfig?.hostUri ||
+      (Constants as any).manifest?.debuggerHost ||
+      (Constants as any).manifest2?.extra?.expoGo?.debuggerHost;
+    if (hostUri) {
+      const ip = hostUri.split(':')[0];
+      if (ip && ip !== 'localhost' && ip !== '127.0.0.1') {
+        return `http://${ip}:3000`;
+      }
+    }
+  } catch (e) {
+    // fallback
+  }
+
+  return Platform.OS === 'android' ? 'http://10.0.2.2:3000' : 'http://localhost:3000';
+}
+
+export const DEFAULT_URL = resolveDefaultApiUrl();
 
 export const api = axios.create({
   baseURL: DEFAULT_URL,
