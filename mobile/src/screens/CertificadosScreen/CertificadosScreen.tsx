@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import { CertificadoService } from '../../services/certificado.service';
@@ -50,9 +51,11 @@ export const CertificadosScreen: React.FC = () => {
     }
   }, [user?.id]);
 
-  useEffect(() => {
-    carregarCertificados();
-  }, [carregarCertificados]);
+  useFocusEffect(
+    useCallback(() => {
+      carregarCertificados();
+    }, [carregarCertificados])
+  );
 
   const onRefresh = () => {
     setAtualizando(true);

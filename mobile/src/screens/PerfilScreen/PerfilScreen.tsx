@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import { MatriculaService } from '../../services/matricula.service';
@@ -44,9 +45,11 @@ export const PerfilScreen: React.FC<Props> = ({ navigation }) => {
     }
   }, [user?.id]);
 
-  useEffect(() => {
-    carregarEstatisticas();
-  }, [carregarEstatisticas]);
+  useFocusEffect(
+    useCallback(() => {
+      carregarEstatisticas();
+    }, [carregarEstatisticas])
+  );
 
   const handleDesativarConta = () => {
     Alert.alert(

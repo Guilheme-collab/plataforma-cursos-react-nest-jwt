@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import { CursoService } from '../../services/curso.service';
@@ -67,11 +68,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     }
   }, [user]);
 
-  useEffect(() => {
-    if (user) {
-      carregarDados();
-    }
-  }, [user, carregarDados]);
+  useFocusEffect(
+    useCallback(() => {
+      if (user) {
+        carregarDados();
+      }
+    }, [user, carregarDados])
+  );
 
   const onRefresh = () => {
     setAtualizando(true);

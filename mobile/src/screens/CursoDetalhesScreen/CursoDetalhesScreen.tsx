@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import { CursoService } from '../../services/curso.service';
@@ -16,6 +17,8 @@ import { AulaService } from '../../services/aula.service';
 import { MatriculaService } from '../../services/matricula.service';
 import { ProgressoService } from '../../services/progresso.service';
 import { AvaliacaoService } from '../../services/avaliacao.service';
+import { AssinaturaService } from '../../services/assinatura.service';
+import { PlanoService } from '../../services/plano.service';
 import { Curso, Modulo, Aula, Avaliacao } from '../../models';
 import { cores } from '../../styles/theme';
 import { styles } from './CursoDetalhesScreen.styles';
@@ -33,7 +36,7 @@ export const CursoDetalhesScreen: React.FC<Props> = ({ route, navigation }) => {
   const [modulos, setModulos] = useState<Modulo[]>([]);
   const [aulas, setAulas] = useState<Aula[]>([]);
   const [matriculado, setMatriculado] = useState(false);
-  const [matriculaId, setMatriculaId] = useState<number | null>(null);
+  const [temPlanoAtivo, setTemPlanoAtivo] = useState(false);
   const [aulasConcluidasIds, setAulasConcluidasIds] = useState<number[]>([]);
   const [avaliacoes, setAvaliacoes] = useState<Avaliacao[]>([]);
   const [notaAvaliacao, setNotaAvaliacao] = useState(5);
@@ -45,15 +48,25 @@ export const CursoDetalhesScreen: React.FC<Props> = ({ route, navigation }) => {
   const carregarDados = useCallback(async () => {
     try {
       setCarregando(true);
-      const [cursoData, modulosData, aulasData, matriculasData, progressosData, avaliacoesData] =
-        await Promise.all([
-          CursoService.findOne(cursoId),
-          ModuloService.findAll(),
-          AulaService.findAll(),
-          MatriculaService.findAll(),
-          ProgressoService.findAll(),
-          AvaliacaoService.findAll(),
-        ]);
+      const [
+        cursoData,
+        modulosData,
+        aulasData,
+        matriculasData,
+        progressosData,
+        avaliacoesData,
+        assinaturasData,
+        planosData,
+      ] = await Promise.all([
+        CursoService.findOne(cursoId),
+        ModuloService.findAll(),
+        AulaService.findAll(),
+        MatriculaService.findAll(),
+        ProgressoService.findAll(),
+        AvaliacaoService.findAll(),
+        AssinaturaService.findAll(),
+        PlanoService.findAll(),
+      ]);
 
       setCurso(cursoData);
 
@@ -72,13 +85,24 @@ export const CursoDetalhesScreen: React.FC<Props> = ({ route, navigation }) => {
         const minhaMatricula = matriculasData.find(
           (m) => m.usuarioId === user.id && m.cursoId === cursoId
         );
-        if (minhaMatricula) {
-          setMatriculado(true);
-          setMatriculaId(minhaMatricula.id);
-        } else {
-          setMatriculado(false);
-          setMatriculaId(null);
-        }
+        setMatriculado(!!minhaMatricula);
+
+        // Verifica se o aluno possui alguma assinatura ativa que contemple este curso
+        const hoje = new Date().toISOString().split('T')[0];
+        const assinaturasValidas = assinaturasData.filter(
+          (a) => a.usuarioId === user.id && (!a.dataFim || a.dataFim >= hoje)
+        );
+
+        const temPlano = assinaturasValidas.some((ass) => {
+          const plano = planosData.find((p) => p.id === ass.planoId);
+          if (!plano) return false;
+          const idsCursos = (plano.planosCursos?.map((pc) => pc.cursoId) || plano.cursosIds) || [];
+          if (idsCursos.length > 0) {
+            return idsCursos.includes(cursoId);
+          }
+          return true; // Se o plano não limitar cursos específicos, cobre toda a plataforma
+        });
+        setTemPlanoAtivo(temPlano);
 
         const concluidas = progressosData
           .filter((p) => p.usuarioId === user.id && p.status === 'Concluído')
@@ -96,11 +120,13 @@ export const CursoDetalhesScreen: React.FC<Props> = ({ route, navigation }) => {
     }
   }, [cursoId, user?.id]);
 
-  useEffect(() => {
-    carregarDados();
-  }, [carregarDados]);
+  useFocusEffect(
+    useCallback(() => {
+      carregarDados();
+    }, [carregarDados])
+  );
 
-  const handleMatricular = async () => {
+  const handleMatricularPeloPlano = async () => {
     if (!user?.id) {
       Alert.alert('Acesso restrito', 'Você precisa estar logado para se matricular.');
       return;
@@ -109,20 +135,19 @@ export const CursoDetalhesScreen: React.FC<Props> = ({ route, navigation }) => {
     try {
       setProcessandoMatricula(true);
       const hoje = new Date().toISOString().split('T')[0];
-      const novaMatricula = await MatriculaService.create({
+      await MatriculaService.create({
         usuarioId: user.id,
         cursoId,
         dataMatricula: hoje,
       });
       setMatriculado(true);
-      setMatriculaId(novaMatricula.id);
       Alert.alert(
-        'Parabéns!',
-        'Sua matrícula foi realizada com sucesso! Você já pode iniciar as aulas.',
-        [{ text: 'Iniciar Agora', onPress: handleIniciarEstudos }]
+        '🎉 Acesso Liberado!',
+        'Sua matrícula foi confirmada pelo seu plano ativo! Bons estudos.',
+        [{ text: 'Iniciar Aulas Agora', onPress: handleIniciarEstudos }]
       );
     } catch (error: any) {
-      console.error('Erro ao se matricular:', error);
+      console.error('Erro ao ativar matrícula:', error);
       const msg = error.response?.data?.message || 'Erro ao realizar matrícula.';
       Alert.alert('Atenção', Array.isArray(msg) ? msg[0] : msg);
     } finally {
@@ -225,40 +250,41 @@ export const CursoDetalhesScreen: React.FC<Props> = ({ route, navigation }) => {
           )}
         </View>
 
-        <View style={styles.cardAcao}>
-          {matriculado ? (
-            <>
-              <View style={styles.progressoLinha}>
-                <Text style={styles.progressoRotulo}>Seu Progresso no Curso</Text>
-                <Text style={styles.progressoValor}>
-                  {porcentagemProgresso}% ({aulasConcluidasNesteCurso}/{aulas.length} aulas)
-                </Text>
-              </View>
+        {/* Bloco de Ação: Conforme se o aluno está matriculado, tem plano ativo ou precisa assinar */}
+        {matriculado ? (
+          <View style={styles.cardAcao}>
+            <View style={styles.progressoLinha}>
+              <Text style={styles.progressoRotulo}>Seu Progresso no Curso</Text>
+              <Text style={styles.progressoValor}>
+                {porcentagemProgresso}% ({aulasConcluidasNesteCurso}/{aulas.length} aulas)
+              </Text>
+            </View>
 
-              <View style={styles.barraProgressoTrilho}>
-                <View
-                  style={[
-                    styles.barraProgressoPreenchida,
-                    { width: `${porcentagemProgresso}%` as any },
-                  ]}
-                />
-              </View>
+            <View style={styles.barraProgressoTrilho}>
+              <View
+                style={[
+                  styles.barraProgressoPreenchida,
+                  { width: `${porcentagemProgresso}%` as any },
+                ]}
+              />
+            </View>
 
-              <TouchableOpacity
-                style={styles.botaoContinuar}
-                onPress={handleIniciarEstudos}
-                activeOpacity={0.85}
-              >
-                <Ionicons name="play" size={20} color={cores.branco} />
-                <Text style={styles.botaoAcaoTexto}>
-                  {aulasConcluidasNesteCurso > 0 ? 'Continuar Estudando' : 'Iniciar Curso'}
-                </Text>
-              </TouchableOpacity>
-            </>
-          ) : (
             <TouchableOpacity
-              style={styles.botaoMatricular}
-              onPress={handleMatricular}
+              style={styles.botaoContinuar}
+              onPress={handleIniciarEstudos}
+              activeOpacity={0.85}
+            >
+              <Ionicons name="play" size={20} color={cores.branco} />
+              <Text style={styles.botaoAcaoTexto}>
+                {aulasConcluidasNesteCurso > 0 ? 'Continuar Estudando' : 'Iniciar Curso'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        ) : temPlanoAtivo ? (
+          <View style={styles.cardAcao}>
+            <TouchableOpacity
+              style={styles.botaoContinuar}
+              onPress={handleMatricularPeloPlano}
               disabled={processandoMatricula}
               activeOpacity={0.85}
             >
@@ -267,12 +293,30 @@ export const CursoDetalhesScreen: React.FC<Props> = ({ route, navigation }) => {
               ) : (
                 <>
                   <Ionicons name="checkmark-done-circle" size={22} color={cores.branco} />
-                  <Text style={styles.botaoAcaoTexto}>Matricular-se Gratuitamente</Text>
+                  <Text style={styles.botaoAcaoTexto}>Liberar Acesso (Incluso no seu Plano)</Text>
                 </>
               )}
             </TouchableOpacity>
-          )}
-        </View>
+          </View>
+        ) : (
+          <View style={styles.cardPlanoBloqueado}>
+            <View style={styles.iconeBloqueio}>
+              <Ionicons name="lock-closed" size={26} color={cores.primaria} />
+            </View>
+            <Text style={styles.tituloPlanoBloqueado}>Acesso Exclusivo para Assinantes</Text>
+            <Text style={styles.descricaoPlanoBloqueado}>
+              Para assistir às aulas deste curso e emitir seu certificado oficial, é necessário assinar um plano de acesso.
+            </Text>
+            <TouchableOpacity
+              style={styles.botaoVerPlanos}
+              onPress={() => navigation.navigate('Principal', { screen: 'Planos' })}
+              activeOpacity={0.85}
+            >
+              <Ionicons name="card-outline" size={20} color={cores.branco} />
+              <Text style={styles.botaoAcaoTexto}>Assinar Plano para Liberar</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         <View style={styles.secao}>
           <Text style={styles.secaoTitulo}>Conteúdo Programático</Text>
@@ -301,8 +345,16 @@ export const CursoDetalhesScreen: React.FC<Props> = ({ route, navigation }) => {
                           onPress={() => {
                             if (!matriculado) {
                               Alert.alert(
-                                'Acesso Bloqueado',
-                                'Matricule-se no curso para assistir a esta aula.'
+                                '🔒 Plano Necessário',
+                                'Para assistir às aulas deste curso e emitir seu certificado, assine um de nossos planos de acesso.',
+                                [
+                                  { text: 'Agora Não', style: 'cancel' },
+                                  {
+                                    text: 'Ver Planos',
+                                    onPress: () =>
+                                      navigation.navigate('Principal', { screen: 'Planos' }),
+                                  },
+                                ]
                               );
                               return;
                             }
@@ -316,13 +368,31 @@ export const CursoDetalhesScreen: React.FC<Props> = ({ route, navigation }) => {
                           <View
                             style={[
                               styles.iconeAulaStatus,
-                              { backgroundColor: concluida ? '#dcfce7' : '#f1f5f9' },
+                              {
+                                backgroundColor: concluida
+                                  ? '#dcfce7'
+                                  : matriculado
+                                  ? '#f1f5f9'
+                                  : '#fef2f2',
+                              },
                             ]}
                           >
                             <Ionicons
-                              name={concluida ? 'checkmark-circle' : 'play-outline'}
+                              name={
+                                concluida
+                                  ? 'checkmark-circle'
+                                  : matriculado
+                                  ? 'play-outline'
+                                  : 'lock-closed'
+                              }
                               size={18}
-                              color={concluida ? cores.secundariaEscura : cores.primaria}
+                              color={
+                                concluida
+                                  ? cores.secundariaEscura
+                                  : matriculado
+                                  ? cores.primaria
+                                  : cores.cinza
+                              }
                             />
                           </View>
 
@@ -333,11 +403,14 @@ export const CursoDetalhesScreen: React.FC<Props> = ({ route, navigation }) => {
                             </Text>
                           </View>
 
-                          <Ionicons
-                            name={matriculado ? 'chevron-forward' : 'lock-closed-outline'}
-                            size={18}
-                            color={cores.cinza}
-                          />
+                          {matriculado ? (
+                            <Ionicons name="chevron-forward" size={18} color={cores.cinza} />
+                          ) : (
+                            <View style={styles.badgeAulaBloqueada}>
+                              <Ionicons name="lock-closed" size={14} color={cores.cinza} />
+                              <Text style={styles.tagRequerPlano}>Requer Plano</Text>
+                            </View>
+                          )}
                         </TouchableOpacity>
                       );
                     })}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import { PlanoService } from '../../services/plano.service';
@@ -55,9 +56,11 @@ export const PlanosScreen: React.FC<Props> = ({ navigation }) => {
     }
   }, []);
 
-  useEffect(() => {
-    carregarDados();
-  }, [carregarDados]);
+  useFocusEffect(
+    useCallback(() => {
+      carregarDados();
+    }, [carregarDados])
+  );
 
   const abrirCheckout = (plano: Plano) => {
     setPlanoSelecionado(plano);

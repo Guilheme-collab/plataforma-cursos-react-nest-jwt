@@ -49,13 +49,16 @@ export const styles = StyleSheet.create({
   planoTopo: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
+    gap: espacamento.sm,
   },
   badgeDuracao: {
     backgroundColor: cores.destaqueBadge,
-    paddingHorizontal: espacamento.md,
+    paddingHorizontal: espacamento.sm,
     paddingVertical: 4,
     borderRadius: bordas.redonda,
+    flexShrink: 0,
+    alignSelf: 'flex-start',
   },
   badgeDuracaoTexto: {
     color: cores.primaria,
@@ -63,9 +66,11 @@ export const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   planoNome: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: 'bold',
     color: cores.texto,
+    flex: 1,
+    lineHeight: 26,
   },
   planoDescricao: {
     fontSize: 13,

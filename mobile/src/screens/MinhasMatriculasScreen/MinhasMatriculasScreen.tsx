@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import { MatriculaService } from '../../services/matricula.service';
@@ -89,9 +90,11 @@ export const MinhasMatriculasScreen: React.FC<Props> = ({ navigation }) => {
     }
   }, [user?.id]);
 
-  useEffect(() => {
-    carregarMatriculas();
-  }, [carregarMatriculas]);
+  useFocusEffect(
+    useCallback(() => {
+      carregarMatriculas();
+    }, [carregarMatriculas])
+  );
 
   const onRefresh = () => {
     setAtualizando(true);

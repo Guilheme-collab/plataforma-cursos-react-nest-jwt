@@ -150,7 +150,7 @@ export const AulaPlayerScreen: React.FC<Props> = ({ route, navigation }) => {
       Alert.alert(
         '🎓 Certificado Emitido!',
         `Parabéns por concluir 100% do curso! Seu certificado com código ${codigo} já está disponível na aba Certificados.`,
-        [{ text: 'Ver Certificados', onPress: () => navigation.navigate('Certificados') }]
+        [{ text: 'Ver Certificados', onPress: () => navigation.navigate('Principal', { screen: 'Certificados' }) }]
       );
     } catch (error: any) {
       console.error('Erro ao emitir certificado:', error);
