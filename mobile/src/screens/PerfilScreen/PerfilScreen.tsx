@@ -77,17 +77,13 @@ export const PerfilScreen: React.FC<Props> = ({ navigation }) => {
     );
   };
 
-  const handleSair = () => {
-    Alert.alert('Sair da Conta', 'Deseja realmente encerrar sua sessão?', [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Sair',
-        style: 'destructive',
-        onPress: async () => {
-          await logout();
-        },
-      },
-    ]);
+  const handleSair = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.warn('Erro ao encerrar sessão:', error);
+      await logout();
+    }
   };
 
   const getIniciais = (nome?: string) => {

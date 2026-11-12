@@ -48,6 +48,8 @@ api.interceptors.request.use(
       const token = await AsyncStorage.getItem('@plataforma_token');
       if (token && config.headers) {
         config.headers.Authorization = `Bearer ${token}`;
+      } else if (config.headers && config.headers.Authorization) {
+        delete config.headers.Authorization;
       }
     } catch (error) {
       console.warn('Erro ao obter dados do AsyncStorage no interceptor:', error);

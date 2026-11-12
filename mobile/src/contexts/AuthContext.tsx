@@ -65,10 +65,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = async () => {
-    setToken(null);
-    setUser(null);
-    await AsyncStorage.removeItem('@plataforma_token');
-    await AsyncStorage.removeItem('@plataforma_user');
+    try {
+      setToken(null);
+      setUser(null);
+      await AsyncStorage.multiRemove(['@plataforma_token', '@plataforma_user']);
+    } catch (error) {
+      console.warn('Erro ao limpar sessão:', error);
+      setToken(null);
+      setUser(null);
+    }
   };
 
   const updateUserData = async (updated: Partial<Usuario>) => {

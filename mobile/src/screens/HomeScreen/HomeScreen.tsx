@@ -29,7 +29,7 @@ interface HomeScreenProps {
 type TipoFiltro = 'GERAL' | 'TRILHAS' | 'MEUS_CURSOS' | 'CURSOS' | 'MODULOS';
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [cursos, setCursos] = useState<Curso[]>([]);
   const [trilhas, setTrilhas] = useState<Trilha[]>([]);
   const [modulos, setModulos] = useState<Modulo[]>([]);
@@ -308,6 +308,20 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
               activeOpacity={0.8}
             >
               <Text style={styles.avatarTexto}>{getIniciais(user?.nomeCompleto)}</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.botaoSairTopo}
+              onPress={async () => {
+                try {
+                  await logout();
+                } catch (e) {
+                  console.warn('Erro ao sair:', e);
+                }
+              }}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="log-out-outline" size={20} color={cores.perigo} />
             </TouchableOpacity>
           </View>
         </View>

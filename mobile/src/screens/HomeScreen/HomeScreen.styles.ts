@@ -68,6 +68,14 @@ export const styles = StyleSheet.create({
     fontSize: 9,
     fontWeight: 'bold',
   },
+  botaoSairTopo: {
+    width: 44,
+    height: 44,
+    borderRadius: bordas.md,
+    backgroundColor: '#FEE2E2',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   toastBanner: {
     position: 'absolute',
     top: 52,
