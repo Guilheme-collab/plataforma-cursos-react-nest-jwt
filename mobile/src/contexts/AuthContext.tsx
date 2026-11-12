@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Usuario } from '../models';
 import { AuthService } from '../services/auth.service';
+import { AppNotificationService } from '../services/notification.service';
 
 interface AuthContextData {
   user: Usuario | null;
@@ -66,11 +67,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     try {
+      AppNotificationService.limparHistorico();
       setToken(null);
       setUser(null);
       await AsyncStorage.multiRemove(['@plataforma_token', '@plataforma_user']);
     } catch (error) {
       console.warn('Erro ao limpar sessão:', error);
+      AppNotificationService.limparHistorico();
       setToken(null);
       setUser(null);
     }

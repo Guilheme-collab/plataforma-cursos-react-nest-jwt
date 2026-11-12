@@ -32,7 +32,7 @@ export const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: espacamento.lg,
-    paddingBottom: 150, // Permite que a tela suba bem acima do teclado
+    paddingBottom: 320, // Permite scroll para cima do teclado com folga total no Android
   },
   card: {
     backgroundColor: cores.fundoCard,

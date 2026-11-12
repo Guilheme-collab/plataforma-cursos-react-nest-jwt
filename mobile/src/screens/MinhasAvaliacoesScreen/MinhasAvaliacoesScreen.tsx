@@ -15,6 +15,7 @@ import { CursoService } from '../../services/curso.service';
 import { Avaliacao, Curso } from '../../models';
 import { cores } from '../../styles/theme';
 import { styles } from './MinhasAvaliacoesScreen.styles';
+import { irParaAba, voltarOuIrParaInicio } from '../../utils/navigation';
 
 interface Props {
   navigation: any;
@@ -105,13 +106,7 @@ export const MinhasAvaliacoesScreen: React.FC<Props> = ({ navigation }) => {
       <View style={styles.cabecalho}>
         <TouchableOpacity
           style={styles.botaoVoltar}
-          onPress={() => {
-            if (navigation.canGoBack()) {
-              navigation.goBack();
-            } else {
-              navigation.navigate('Principal', { screen: 'Início' });
-            }
-          }}
+          onPress={() => voltarOuIrParaInicio(navigation)}
           activeOpacity={0.8}
         >
           <Ionicons name="arrow-back" size={20} color={cores.texto} />
@@ -142,13 +137,7 @@ export const MinhasAvaliacoesScreen: React.FC<Props> = ({ navigation }) => {
             </Text>
             <TouchableOpacity
               style={styles.botaoExplorar}
-              onPress={() => {
-                try {
-                  navigation.navigate('Principal', { screen: 'Matrículas' });
-                } catch {
-                  navigation.navigate('Matrículas');
-                }
-              }}
+              onPress={() => irParaAba(navigation, 'Matrículas')}
               activeOpacity={0.85}
             >
               <Text style={styles.botaoExplorarTexto}>Ver Meus Cursos</Text>

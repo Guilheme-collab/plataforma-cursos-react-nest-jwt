@@ -29,9 +29,9 @@ export const CertificadosPages = () => {
   const [loading, setLoading] = useState(true);
   const [issuingCourseId, setIssuingCourseId] = useState<number | null>(null);
 
-  const loadData = async () => {
+  const loadData = async (silencioso = false) => {
     try {
-      setLoading(true);
+      if (!silencioso) setLoading(true);
       const dataCertificados = await CertificadoService.findAll();
       const userCertificates = isAdmin ? dataCertificados : dataCertificados.filter((c: any) => c.usuarioId === user?.id);
       setLista(userCertificates);
@@ -72,15 +72,27 @@ export const CertificadosPages = () => {
       }
     } catch (error: any) {
       console.error(error);
-      toast.error('Erro ao carregar certificados do servidor!');
+      if (!silencioso) toast.error('Erro ao carregar certificados do servidor!');
     } finally {
-      setLoading(false);
+      if (!silencioso) setLoading(false);
     }
   };
 
   useEffect(() => {
     loadData();
-  }, [user]);
+
+    const handleSync = () => loadData(true);
+    window.addEventListener('plataforma:dados-atualizados', handleSync);
+
+    const interval = setInterval(() => {
+      loadData(true);
+    }, 3500);
+
+    return () => {
+      window.removeEventListener('plataforma:dados-atualizados', handleSync);
+      clearInterval(interval);
+    };
+  }, [user, isAdmin]);
 
   const handleSolicitarCertificado = async (info: CursoProgressoInfo) => {
     if (!user?.id || !info.curso.id) return;

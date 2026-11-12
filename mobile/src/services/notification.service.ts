@@ -12,6 +12,9 @@ Notifications.setNotificationHandler({
   }),
 });
 
+// Cache em memória dos IDs já notificados nativamente nesta sessão (evita duplicações no celular)
+const idsNotificados = new Set<number>();
+
 export const AppNotificationService = {
   /**
    * Inicializa o canal de notificações nativo do Android e solicita permissões
@@ -54,8 +57,17 @@ export const AppNotificationService = {
 
   /**
    * Dispara notificação nativa na barra de notificações do celular (com apito e vibração)
+   * Possui trava estrita anti-duplicação por ID
    */
   dispararNotificacaoLocal: async (notif: Notificacao) => {
+    if (!notif || !notif.id) return;
+
+    // Se já foi disparada nesta sessão, não repete
+    if (idsNotificados.has(notif.id)) {
+      return;
+    }
+    idsNotificados.add(notif.id);
+
     try {
       const extras = typeof notif.dadosExtras === 'object' && notif.dadosExtras !== null ? notif.dadosExtras : {};
       await Notifications.scheduleNotificationAsync({
@@ -72,5 +84,12 @@ export const AppNotificationService = {
     } catch (error) {
       console.warn('Erro ao disparar notificação nativa no celular:', error);
     }
+  },
+
+  /**
+   * Limpa o histórico de IDs notificados (útil no logout)
+   */
+  limparHistorico: () => {
+    idsNotificados.clear();
   },
 };

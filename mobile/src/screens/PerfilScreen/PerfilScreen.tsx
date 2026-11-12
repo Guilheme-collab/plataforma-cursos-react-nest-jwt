@@ -15,6 +15,7 @@ import { CertificadoService } from '../../services/certificado.service';
 import { UsuarioService } from '../../services/usuario.service';
 import { cores } from '../../styles/theme';
 import { styles } from './PerfilScreen.styles';
+import { voltarOuIrParaInicio } from '../../utils/navigation';
 
 interface Props {
   navigation: any;
@@ -98,17 +99,7 @@ export const PerfilScreen: React.FC<Props> = ({ navigation }) => {
       <View style={styles.cabecalho}>
         <TouchableOpacity
           style={styles.botaoVoltar}
-          onPress={() => {
-            if (navigation.canGoBack()) {
-              navigation.goBack();
-            } else {
-              try {
-                navigation.navigate('Principal', { screen: 'Início' });
-              } catch {
-                navigation.navigate('Início');
-              }
-            }
-          }}
+          onPress={() => voltarOuIrParaInicio(navigation)}
           activeOpacity={0.8}
         >
           <Ionicons name="arrow-back" size={22} color={cores.texto} />

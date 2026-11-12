@@ -150,8 +150,8 @@ async function main() {
     await prisma.notificacao.create({
       data: {
         usuarioId: null,
-        roleDestino: 'TODOS',
-        titulo: '🎉 Bem-vindo(a) à Plataforma EAD!',
+        roleDestino: 'ADMIN',
+        titulo: '🎉 Apache Kafka Ativo',
         mensagem: 'Sistema de mensageria Apache Kafka ativo. Cursos, trilhas e módulos integrados em tempo real.',
         tipo: 'BOAS_VINDAS',
         lida: false,

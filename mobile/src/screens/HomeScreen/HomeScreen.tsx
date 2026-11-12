@@ -41,6 +41,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation, route }) => 
   const [toastNotificacao, setToastNotificacao] = useState<Notificacao | null>(null);
   const ultimoIdNotificacaoRef = useRef<number | null>(null);
 
+  // Ref para evitar que dois carregamentos simultâneos disparem a mesma notificação nativa
+  const processandoRef = useRef(false);
+
   const [filtroAtivo, setFiltroAtivo] = useState<TipoFiltro>('GERAL');
 
   useEffect(() => {
@@ -77,31 +80,44 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation, route }) => 
         ]);
 
       // Alerta instantâneo com banner flutuante no celular ao receber notificação
-      if (listaNotif.length > 0) {
-        if (ultimoIdNotificacaoRef.current !== null) {
-          const nova = listaNotif.find(
-            (n) => n.id > (ultimoIdNotificacaoRef.current || 0) && !n.lida
-          );
-          if (nova) {
-            setToastNotificacao(nova);
-            AppNotificationService.dispararNotificacaoLocal(nova);
-            setTimeout(() => {
-              setToastNotificacao(null);
-            }, 5000);
+      // Usa processandoRef para evitar condição de corrida entre chamadas concorrentes
+      if (listaNotif.length > 0 && !processandoRef.current) {
+        processandoRef.current = true;
+        try {
+          const maxId = Math.max(...listaNotif.map((n) => n.id));
+          if (ultimoIdNotificacaoRef.current !== null) {
+            const novas = listaNotif.filter(
+              (n) => n.id > (ultimoIdNotificacaoRef.current || 0) && !n.lida
+            );
+            if (novas.length > 0) {
+              const maisRecente = novas[0];
+              setToastNotificacao(maisRecente);
+              AppNotificationService.dispararNotificacaoLocal(maisRecente);
+              setTimeout(() => {
+                setToastNotificacao(null);
+              }, 5000);
+            }
+          } else {
+            // No primeiro carregamento, só exibe banner se for evento recém-criado (últimos 2 minutos)
+            const agora = Date.now();
+            const recenteNaoLida = listaNotif.find((n) => {
+              if (n.lida) return false;
+              const diffMs = agora - new Date(n.dataCriacao).getTime();
+              return diffMs < 120000;
+            });
+            if (recenteNaoLida) {
+              setToastNotificacao(recenteNaoLida);
+              AppNotificationService.dispararNotificacaoLocal(recenteNaoLida);
+              setTimeout(() => {
+                setToastNotificacao(null);
+              }, 5000);
+            }
           }
-        } else {
-          // No primeiro carregamento, se houver notificação não lida (ex: Boas-vindas Kafka), exibe na hora!
-          const recenteNaoLida = listaNotif.find((n) => !n.lida);
-          if (recenteNaoLida) {
-            setToastNotificacao(recenteNaoLida);
-            AppNotificationService.dispararNotificacaoLocal(recenteNaoLida);
-            setTimeout(() => {
-              setToastNotificacao(null);
-            }, 5000);
-          }
+          ultimoIdNotificacaoRef.current = maxId;
+        } finally {
+          processandoRef.current = false;
         }
-        ultimoIdNotificacaoRef.current = Math.max(...listaNotif.map((n) => n.id));
-      } else {
+      } else if (listaNotif.length === 0 && ultimoIdNotificacaoRef.current === null) {
         ultimoIdNotificacaoRef.current = 0;
       }
 

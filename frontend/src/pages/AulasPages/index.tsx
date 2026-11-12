@@ -23,9 +23,9 @@ export const AulasPages = () => {
     return error?.message || 'Ocorreu um erro inesperado na operação.';
   };
 
-  const loadData = async () => {
+  const loadData = async (silencioso = false) => {
     try {
-      setLoading(true);
+      if (!silencioso) setLoading(true);
       const data = await AulaService.findAll();
       
       if (!isAdmin) {
@@ -42,15 +42,27 @@ export const AulasPages = () => {
       }
     } catch (error: any) {
       console.error(error);
-      toast.error(extractErrorMessage(error));
+      if (!silencioso) toast.error(extractErrorMessage(error));
     } finally {
-      setLoading(false);
+      if (!silencioso) setLoading(false);
     }
   };
 
   useEffect(() => {
     loadData();
-  }, []);
+
+    const handleSync = () => loadData(true);
+    window.addEventListener('plataforma:dados-atualizados', handleSync);
+
+    const interval = setInterval(() => {
+      loadData(true);
+    }, 3500);
+
+    return () => {
+      window.removeEventListener('plataforma:dados-atualizados', handleSync);
+      clearInterval(interval);
+    };
+  }, [user, isAdmin]);
 
   const handleSave = async (data: Aula) => {
     try {
@@ -105,7 +117,7 @@ export const AulasPages = () => {
           <button
             type="button"
             className="btn btn-outline-primary btn-sm rounded-pill px-3 shadow-sm"
-            onClick={loadData}
+            onClick={() => loadData()}
             title="Recarregar dados"
           >
             <i className="bi bi-arrow-clockwise me-1"></i> Atualizar

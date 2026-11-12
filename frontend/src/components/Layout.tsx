@@ -73,6 +73,9 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
       if (lista.length > 0) {
         if (ultimoIdRef.current !== null) {
           const novas = lista.filter((n) => n.id > (ultimoIdRef.current || 0) && !n.lida);
+          if (novas.length > 0) {
+            window.dispatchEvent(new CustomEvent('plataforma:dados-atualizados', { detail: { novas } }));
+          }
           novas.forEach((nova) => {
             dispararNotificacaoNativaWeb(nova.titulo, nova.mensagem, nova.id);
             toast.info(

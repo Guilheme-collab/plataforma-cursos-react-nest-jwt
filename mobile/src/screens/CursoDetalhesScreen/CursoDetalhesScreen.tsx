@@ -22,6 +22,7 @@ import { PlanoService } from '../../services/plano.service';
 import { Curso, Modulo, Aula, Avaliacao } from '../../models';
 import { cores } from '../../styles/theme';
 import { styles } from './CursoDetalhesScreen.styles';
+import { voltarOuIrParaInicio } from '../../utils/navigation';
 
 interface Props {
   route: any;
@@ -214,13 +215,7 @@ export const CursoDetalhesScreen: React.FC<Props> = ({ route, navigation }) => {
       <View style={styles.cabecalhoBarra}>
         <TouchableOpacity
           style={styles.botaoVoltar}
-          onPress={() => {
-            if (navigation.canGoBack()) {
-              navigation.goBack();
-            } else {
-              navigation.navigate('Principal', { screen: 'Início' });
-            }
-          }}
+          onPress={() => voltarOuIrParaInicio(navigation)}
           activeOpacity={0.8}
         >
           <Ionicons name="arrow-back" size={20} color={cores.texto} />

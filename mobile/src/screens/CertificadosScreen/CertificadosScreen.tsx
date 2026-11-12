@@ -15,6 +15,7 @@ import { CursoService } from '../../services/curso.service';
 import { Certificado, Curso } from '../../models';
 import { cores } from '../../styles/theme';
 import { styles } from './CertificadosScreen.styles';
+import { voltarOuIrParaInicio } from '../../utils/navigation';
 
 interface ItemCertificadoComCurso {
   certificado: Certificado;
@@ -91,13 +92,7 @@ export const CertificadosScreen: React.FC<Props> = ({ navigation }) => {
         <View style={styles.cabecalhoLinha}>
           <TouchableOpacity
             style={styles.botaoVoltar}
-            onPress={() => {
-              if (navigation.canGoBack()) {
-                navigation.goBack();
-              } else {
-                navigation.navigate('Principal', { screen: 'Início' });
-              }
-            }}
+            onPress={() => voltarOuIrParaInicio(navigation)}
             activeOpacity={0.8}
           >
             <Ionicons name="arrow-back" size={20} color={cores.texto} />

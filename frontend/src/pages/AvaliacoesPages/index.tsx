@@ -14,24 +14,36 @@ export const AvaliacoesPages = () => {
   const [item, setItem] = useState<Partial<Avaliacao>>({});
   const [loading, setLoading] = useState(true);
 
-  const loadData = async () => {
+  const loadData = async (silencioso = false) => {
     try {
-      setLoading(true);
+      if (!silencioso) setLoading(true);
       const data = await AvaliacaoService.findAll();
       // Admins vêm todas as avaliações, alunos vêm apenas as suas
       const filtered = isAdmin ? data : data.filter((a: any) => a.usuarioId === user?.id);
       setLista(filtered);
     } catch (error: any) {
       console.error(error);
-      toast.error('Erro ao carregar avaliações do servidor!');
+      if (!silencioso) toast.error('Erro ao carregar avaliações do servidor!');
     } finally {
-      setLoading(false);
+      if (!silencioso) setLoading(false);
     }
   };
 
   useEffect(() => {
     loadData();
-  }, [user]);
+
+    const handleSync = () => loadData(true);
+    window.addEventListener('plataforma:dados-atualizados', handleSync);
+
+    const interval = setInterval(() => {
+      loadData(true);
+    }, 3500);
+
+    return () => {
+      window.removeEventListener('plataforma:dados-atualizados', handleSync);
+      clearInterval(interval);
+    };
+  }, [user, isAdmin]);
 
   const handleSave = async (data: Avaliacao) => {
     try {

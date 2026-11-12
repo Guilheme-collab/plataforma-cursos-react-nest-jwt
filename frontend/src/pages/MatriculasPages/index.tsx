@@ -22,24 +22,36 @@ export const MatriculasPages = () => {
     return error?.message || 'Ocorreu um erro inesperado na operação.';
   };
 
-  const loadData = async () => {
+  const loadData = async (silencioso = false) => {
     try {
-      setLoading(true);
+      if (!silencioso) setLoading(true);
       const data = await MatriculaService.findAll();
       // Se não for admin, filtra apenas as matrículas do usuário logado
       const filtered = isAdmin ? data : data.filter((m: any) => m.usuarioId === user?.id);
       setLista(filtered);
     } catch (error: any) {
       console.error(error);
-      toast.error(extractErrorMessage(error));
+      if (!silencioso) toast.error(extractErrorMessage(error));
     } finally {
-      setLoading(false);
+      if (!silencioso) setLoading(false);
     }
   };
 
   useEffect(() => {
     loadData();
-  }, [user]);
+
+    const handleSync = () => loadData(true);
+    window.addEventListener('plataforma:dados-atualizados', handleSync);
+
+    const interval = setInterval(() => {
+      loadData(true);
+    }, 3500);
+
+    return () => {
+      window.removeEventListener('plataforma:dados-atualizados', handleSync);
+      clearInterval(interval);
+    };
+  }, [user, isAdmin]);
 
   const handleSave = async (data: Matricula) => {
     try {
@@ -94,7 +106,7 @@ export const MatriculasPages = () => {
           <button
             type="button"
             className="btn btn-outline-primary btn-sm rounded-pill px-3 shadow-sm"
-            onClick={loadData}
+            onClick={() => loadData()}
             title="Recarregar dados"
           >
             <i className="bi bi-arrow-clockwise me-1"></i> Atualizar

@@ -30,9 +30,9 @@ export const DashboardPage: React.FC = () => {
 
   const [loading, setLoading] = useState(true);
 
-  const carregarDadosDoBanco = async () => {
+  const carregarDadosDoBanco = async (silencioso = false) => {
     try {
-      setLoading(true);
+      if (!silencioso) setLoading(true);
       if (isAdmin) {
         const [usersData, cursosData, matriculasData, pagamentosData] = await Promise.all([
           UsuarioService.findAll().catch(() => []),
@@ -70,13 +70,27 @@ export const DashboardPage: React.FC = () => {
     } catch (error) {
       console.error('Erro ao carregar dados do banco:', error);
     } finally {
-      setLoading(false);
+      if (!silencioso) setLoading(false);
     }
   };
 
   useEffect(() => {
     carregarDadosDoBanco();
-  }, [user]);
+
+    // Sincronização automática em tempo real (ao receber evento de mensageria Kafka / notificação)
+    const handleSync = () => carregarDadosDoBanco(true);
+    window.addEventListener('plataforma:dados-atualizados', handleSync);
+
+    // Polling contínuo de background a cada 3.5 segundos para garantir paridade instantânea entre web e mobile
+    const interval = setInterval(() => {
+      carregarDadosDoBanco(true);
+    }, 3500);
+
+    return () => {
+      window.removeEventListener('plataforma:dados-atualizados', handleSync);
+      clearInterval(interval);
+    };
+  }, [user, isAdmin]);
 
   const handleMatricular = async (cursoId: number) => {
     if (!user?.id) return;
@@ -117,7 +131,7 @@ export const DashboardPage: React.FC = () => {
             <p className="text-muted mb-0">Visão geral do sistema e métricas em tempo real</p>
           </div>
           <button 
-            onClick={carregarDadosDoBanco} 
+            onClick={() => carregarDadosDoBanco()} 
             disabled={loading}
             className="btn btn-outline-primary rounded-pill px-4 shadow-sm"
           >

@@ -18,6 +18,7 @@ import { ProgressoService } from '../../services/progresso.service';
 import { Matricula, Curso, Aula } from '../../models';
 import { cores } from '../../styles/theme';
 import { styles } from './MinhasMatriculasScreen.styles';
+import { irParaAba, voltarOuIrParaInicio } from '../../utils/navigation';
 
 interface Props {
   navigation: any;
@@ -125,13 +126,7 @@ export const MinhasMatriculasScreen: React.FC<Props> = ({ navigation }) => {
         <View style={styles.cabecalhoLinha}>
           <TouchableOpacity
             style={styles.botaoVoltar}
-            onPress={() => {
-              if (navigation.canGoBack()) {
-                navigation.goBack();
-              } else {
-                navigation.navigate('Principal', { screen: 'Início' });
-              }
-            }}
+            onPress={() => voltarOuIrParaInicio(navigation)}
             activeOpacity={0.8}
           >
             <Ionicons name="arrow-back" size={20} color={cores.texto} />
@@ -164,13 +159,7 @@ export const MinhasMatriculasScreen: React.FC<Props> = ({ navigation }) => {
             </Text>
             <TouchableOpacity
               style={styles.botaoExplorarCursos}
-              onPress={() => {
-                try {
-                  navigation.navigate('Principal', { screen: 'Início' });
-                } catch {
-                  navigation.navigate('Início');
-                }
-              }}
+              onPress={() => irParaAba(navigation, 'Início')}
               activeOpacity={0.85}
             >
               <Text style={styles.botaoExplorarCursosTexto}>Explorar Catálogo</Text>

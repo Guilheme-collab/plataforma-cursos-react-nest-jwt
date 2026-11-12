@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -20,6 +20,8 @@ interface RegisterScreenProps {
 
 export const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
   const { register } = useAuth();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const scrollRef = useRef<any>(null);
   const [nomeCompleto, setNomeCompleto] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
@@ -95,7 +97,6 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) =>
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0}
     >
       <View style={styles.topoBarra}>
         <TouchableOpacity
@@ -109,6 +110,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) =>
       </View>
 
       <ScrollView
+        ref={scrollRef}
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
         automaticallyAdjustKeyboardInsets={true}
@@ -191,6 +193,9 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) =>
                   secureTextEntry={!mostrarConfirmar}
                   value={confirmarSenha}
                   onChangeText={setConfirmarSenha}
+                  onFocus={() => {
+                    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 150);
+                  }}
                 />
                 <TouchableOpacity
                   style={styles.botaoOlho}

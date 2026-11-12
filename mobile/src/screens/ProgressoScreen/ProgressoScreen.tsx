@@ -18,6 +18,7 @@ import { ProgressoService } from '../../services/progresso.service';
 import { Matricula, Curso, Modulo, Aula } from '../../models';
 import { cores } from '../../styles/theme';
 import { styles } from './ProgressoScreen.styles';
+import { irParaAba, voltarOuIrParaInicio } from '../../utils/navigation';
 
 interface Props {
   navigation: any;
@@ -137,13 +138,7 @@ export const ProgressoScreen: React.FC<Props> = ({ navigation }) => {
       <View style={styles.cabecalho}>
         <TouchableOpacity
           style={styles.botaoVoltar}
-          onPress={() => {
-            if (navigation.canGoBack()) {
-              navigation.goBack();
-            } else {
-              navigation.navigate('Principal', { screen: 'Início' });
-            }
-          }}
+          onPress={() => voltarOuIrParaInicio(navigation)}
           activeOpacity={0.8}
         >
           <Ionicons name="arrow-back" size={20} color={cores.texto} />
@@ -163,28 +158,48 @@ export const ProgressoScreen: React.FC<Props> = ({ navigation }) => {
         }
         showsVerticalScrollIndicator={false}
       >
-        {/* Card Resumo Geral */}
+        {/* Card Resumo Geral - Layout Moderno e Espaçoso */}
         <View style={styles.cardResumo}>
-          <Text style={styles.resumoTitulo}>Desempenho Geral de Estudos</Text>
-          <View style={styles.resumoLinha}>
-            <View style={styles.resumoItem}>
-              <Text style={styles.resumoNumero}>{progressoGeral}%</Text>
-              <Text style={styles.resumoRotulo}>Geral Concluído</Text>
+          <View style={styles.resumoCabecalho}>
+            <View>
+              <Text style={styles.resumoTitulo}>Desempenho Geral</Text>
+              <Text style={styles.resumoSubtitulo}>Acompanhe sua evolução em tempo real</Text>
             </View>
-            <View style={styles.resumoDivisor} />
-            <View style={styles.resumoItem}>
-              <Text style={styles.resumoNumero}>{totalConcluidasGeral}/{totalAulasGeral}</Text>
-              <Text style={styles.resumoRotulo}>Aulas Assistidas</Text>
-            </View>
-            <View style={styles.resumoDivisor} />
-            <View style={styles.resumoItem}>
-              <Text style={styles.resumoNumero}>{listaCursos.filter((c) => c.porcentagem === 100).length}</Text>
-              <Text style={styles.resumoRotulo}>Cursos Concluídos</Text>
+            <View style={styles.badgeProgressoPercentual}>
+              <Text style={styles.badgeProgressoPercentualTexto}>{progressoGeral}%</Text>
             </View>
           </View>
 
+          {/* Barra de Progresso com cantos arredondados */}
           <View style={styles.trilhoProgresso}>
-            <View style={[styles.barraProgresso, { width: `${progressoGeral}%` as any }]} />
+            <View style={[styles.barraProgresso, { width: `${Math.max(progressoGeral, 2)}%` as any }]} />
+          </View>
+
+          {/* 3 Métricas em Cards Individuais Espaçosos */}
+          <View style={styles.gradeEstatisticas}>
+            <View style={styles.cardEstatisticaItem}>
+              <View style={[styles.iconeEstatisticaWrapper, { backgroundColor: '#EEF2FF' }]}>
+                <Ionicons name="pie-chart-outline" size={18} color={cores.primaria} />
+              </View>
+              <Text style={styles.valorEstatistica}>{progressoGeral}%</Text>
+              <Text style={styles.rotuloEstatistica}>Concluído</Text>
+            </View>
+
+            <View style={styles.cardEstatisticaItem}>
+              <View style={[styles.iconeEstatisticaWrapper, { backgroundColor: '#ECFDF5' }]}>
+                <Ionicons name="play-circle-outline" size={18} color="#10B981" />
+              </View>
+              <Text style={styles.valorEstatistica}>{totalConcluidasGeral}/{totalAulasGeral}</Text>
+              <Text style={styles.rotuloEstatistica}>Aulas Feitas</Text>
+            </View>
+
+            <View style={styles.cardEstatisticaItem}>
+              <View style={[styles.iconeEstatisticaWrapper, { backgroundColor: '#FEF3C7' }]}>
+                <Ionicons name="ribbon-outline" size={18} color="#F59E0B" />
+              </View>
+              <Text style={styles.valorEstatistica}>{listaCursos.filter((c) => c.porcentagem === 100).length}</Text>
+              <Text style={styles.rotuloEstatistica}>Cursos 100%</Text>
+            </View>
           </View>
         </View>
 
@@ -200,9 +215,7 @@ export const ProgressoScreen: React.FC<Props> = ({ navigation }) => {
             </Text>
             <TouchableOpacity
               style={styles.botaoExplorar}
-              onPress={() => {
-                navigation.navigate('Principal', { screen: 'Início' });
-              }}
+              onPress={() => irParaAba(navigation, 'Início')}
               activeOpacity={0.85}
             >
               <Text style={styles.botaoExplorarTexto}>Explorar Catálogo</Text>

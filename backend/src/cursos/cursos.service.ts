@@ -21,12 +21,22 @@ export class CursoService {
         include: { instrutor: true, categoria: true },
       });
 
-      // 📨 Publicar Evento de Novo Curso no Kafka
+      // 📨 Publicar Evento de Novo Curso no Kafka para Alunos
       await this.kafkaService.publicarNotificacao({
         usuarioId: null,
         roleDestino: 'USER',
         titulo: `✨ Novo Curso: ${novoCurso.titulo}`,
         mensagem: `O curso "${novoCurso.titulo}" acaba de ser publicado na plataforma. Venha conferir o conteúdo programático!`,
+        tipo: 'NOVO_CURSO',
+        dadosExtras: { cursoId: novoCurso.id, titulo: novoCurso.titulo },
+      });
+
+      // Notificação para a Administração
+      await this.kafkaService.publicarNotificacao({
+        usuarioId: null,
+        roleDestino: 'ADMIN',
+        titulo: `📚 Novo Curso Cadastrado: ${novoCurso.titulo}`,
+        mensagem: `O curso "${novoCurso.titulo}" foi cadastrado no catálogo e disponibilizado para matrículas.`,
         tipo: 'NOVO_CURSO',
         dadosExtras: { cursoId: novoCurso.id, titulo: novoCurso.titulo },
       });

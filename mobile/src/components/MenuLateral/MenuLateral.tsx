@@ -11,6 +11,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import { cores } from '../../styles/theme';
 import { styles } from './MenuLateral.styles';
+import { irParaAba } from '../../utils/navigation';
 
 interface MenuLateralProps {
   visivel: boolean;
@@ -41,16 +42,21 @@ export const MenuLateral: React.FC<MenuLateralProps> = ({
     const rotasTab = ['Início', 'Matrículas', 'Planos', 'Certificados', 'Perfil'];
 
     if (rotasTab.includes(nomeRota)) {
-      try {
-        navigation.navigate('Principal', { screen: nomeRota, params });
-      } catch {
-        navigation.navigate(nomeRota, params);
-      }
+      irParaAba(navigation, nomeRota, params);
     } else {
       try {
         navigation.navigate(nomeRota, params);
       } catch {
-        navigation.navigate('Principal', { screen: nomeRota, params });
+        try {
+          const parent = navigation.getParent ? navigation.getParent() : null;
+          if (parent) {
+            parent.navigate(nomeRota, params);
+          } else {
+            navigation.navigate('Principal', { screen: nomeRota, params });
+          }
+        } catch {
+          navigation.navigate('Principal', { screen: nomeRota, params });
+        }
       }
     }
   };

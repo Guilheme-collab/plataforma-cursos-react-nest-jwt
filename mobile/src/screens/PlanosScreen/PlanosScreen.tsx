@@ -20,6 +20,7 @@ import { MatriculaService } from '../../services/matricula.service';
 import { Plano, Curso } from '../../models';
 import { cores } from '../../styles/theme';
 import { styles } from './PlanosScreen.styles';
+import { voltarOuIrParaInicio } from '../../utils/navigation';
 
 interface Props {
   navigation: any;
@@ -175,13 +176,7 @@ export const PlanosScreen: React.FC<Props> = ({ navigation }) => {
         <View style={styles.cabecalhoLinha}>
           <TouchableOpacity
             style={styles.botaoVoltar}
-            onPress={() => {
-              if (navigation.canGoBack()) {
-                navigation.goBack();
-              } else {
-                navigation.navigate('Principal', { screen: 'Início' });
-              }
-            }}
+            onPress={() => voltarOuIrParaInicio(navigation)}
             activeOpacity={0.8}
           >
             <Ionicons name="arrow-back" size={20} color={cores.texto} />

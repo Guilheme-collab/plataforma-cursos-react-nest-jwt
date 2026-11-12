@@ -89,6 +89,20 @@ export class CertificadoService {
         },
       });
 
+      // Notificação para a Administração
+      await this.kafkaService.publicarNotificacao({
+        usuarioId: null,
+        roleDestino: 'ADMIN',
+        titulo: '📜 Novo Certificado Conquistado',
+        mensagem: `O aluno "${novoCertificado.usuario?.nomeCompleto || ''}" concluiu o curso "${novoCertificado.curso?.titulo || ''}" e emitiu o certificado (${novoCertificado.codigoVerificacao}).`,
+        tipo: 'CERTIFICADO',
+        dadosExtras: {
+          certificadoId: novoCertificado.id,
+          usuarioId: novoCertificado.usuarioId,
+          codigoVerificacao: novoCertificado.codigoVerificacao,
+        },
+      });
+
       return novoCertificado;
     } catch (error: any) {
       if (error instanceof ConflictException || error instanceof NotFoundException) {

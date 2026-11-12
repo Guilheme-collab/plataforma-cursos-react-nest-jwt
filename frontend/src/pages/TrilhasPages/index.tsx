@@ -10,20 +10,34 @@ export const TrilhasPages = () => {
   const [item, setItem] = useState<Partial<Trilha>>({});
   const [loading, setLoading] = useState(true);
 
-  const loadData = async () => {
+  const loadData = async (silencioso = false) => {
     try {
-      setLoading(true);
+      if (!silencioso) setLoading(true);
       const data = await TrilhaService.findAll();
       setLista(data);
     } catch (error: any) {
       console.error(error);
-      toast.error('Erro ao carregar dados do servidor!');
+      if (!silencioso) toast.error('Erro ao carregar dados do servidor!');
     } finally {
-      setLoading(false);
+      if (!silencioso) setLoading(false);
     }
   };
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => {
+    loadData();
+
+    const handleSync = () => loadData(true);
+    window.addEventListener('plataforma:dados-atualizados', handleSync);
+
+    const interval = setInterval(() => {
+      loadData(true);
+    }, 3500);
+
+    return () => {
+      window.removeEventListener('plataforma:dados-atualizados', handleSync);
+      clearInterval(interval);
+    };
+  }, []);
 
   const handleSave = async (data: Trilha) => {
     try {

@@ -23,9 +23,9 @@ export const PlanosPages = () => {
   // Estado para controlar o modal de checkout
   const [planoCheckout, setPlanoCheckout] = useState<Plano | null>(null);
 
-  const loadData = async () => {
+  const loadData = async (silencioso = false) => {
     try {
-      setLoading(true);
+      if (!silencioso) setLoading(true);
       const [dataPlanos, dataCursos] = await Promise.all([
         PlanoService.findAll(),
         CursoService.findAll().catch(() => []),
@@ -34,14 +34,26 @@ export const PlanosPages = () => {
       setCursos(dataCursos);
     } catch (error: any) {
       console.error(error);
-      toast.error('Erro ao carregar planos!');
+      if (!silencioso) toast.error('Erro ao carregar planos!');
     } finally {
-      setLoading(false);
+      if (!silencioso) setLoading(false);
     }
   };
 
   useEffect(() => {
     loadData();
+
+    const handleSync = () => loadData(true);
+    window.addEventListener('plataforma:dados-atualizados', handleSync);
+
+    const interval = setInterval(() => {
+      loadData(true);
+    }, 3500);
+
+    return () => {
+      window.removeEventListener('plataforma:dados-atualizados', handleSync);
+      clearInterval(interval);
+    };
   }, []);
 
   const handleSave = async (data: Plano) => {
