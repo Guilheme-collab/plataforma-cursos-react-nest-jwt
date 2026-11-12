@@ -40,8 +40,10 @@ export const PerfilScreen: React.FC<Props> = ({ navigation }) => {
         progressosData.filter((p) => p.usuarioId === user.id && p.status === 'Concluído').length
       );
       setTotalCertificados(certificadosData.filter((c) => c.usuarioId === user.id).length);
-    } catch (error) {
-      console.error('Erro ao carregar estatísticas do perfil:', error);
+    } catch (error: any) {
+      if (error?.response?.status !== 401) {
+        console.warn('Erro ao carregar estatísticas do perfil:', error?.message || error);
+      }
     }
   }, [user?.id]);
 

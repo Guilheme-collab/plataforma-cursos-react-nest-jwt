@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -26,8 +26,9 @@ export const CertificadosScreen: React.FC = () => {
   const [carregando, setCarregando] = useState(true);
   const [atualizando, setAtualizando] = useState(false);
 
-  const carregarCertificados = useCallback(async () => {
+  const carregarCertificados = useCallback(async (silencioso = false) => {
     if (!user?.id) return;
+    if (!silencioso && certificados.length === 0) setCarregando(true);
     try {
       const [certificadosData, cursosData] = await Promise.all([
         CertificadoService.findAll(),
@@ -56,6 +57,15 @@ export const CertificadosScreen: React.FC = () => {
       carregarCertificados();
     }, [carregarCertificados])
   );
+
+  // Auto-refresh a cada 3 segundos para exibir certificados gerados em tempo real
+  useEffect(() => {
+    if (!user) return;
+    const interval = setInterval(() => {
+      carregarCertificados(true);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [user, carregarCertificados]);
 
   const onRefresh = () => {
     setAtualizando(true);

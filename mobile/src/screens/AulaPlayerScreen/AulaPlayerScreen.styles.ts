@@ -101,7 +101,7 @@ export const styles = StyleSheet.create({
   },
   conteudoScroll: {
     padding: espacamento.lg,
-    paddingBottom: 220, // Garante que o card de certificado e todos os botões fiquem confortavelmente visíveis
+    paddingBottom: 280, // Garante que o card de certificado e todos os botões fiquem confortavelmente visíveis
     gap: espacamento.lg,
   },
   cardInfoAula: {
@@ -219,6 +219,7 @@ export const styles = StyleSheet.create({
     borderColor: cores.aviso,
     alignItems: 'center',
     gap: espacamento.sm,
+    marginBottom: 40,
   },
   certificadoLiberadoTitulo: {
     fontSize: 16,

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -39,7 +39,8 @@ export const PlanosScreen: React.FC<Props> = ({ navigation }) => {
   const [processandoPagamento, setProcessandoPagamento] = useState(false);
   const [carregando, setCarregando] = useState(true);
 
-  const carregarDados = useCallback(async () => {
+  const carregarDados = useCallback(async (silencioso = false) => {
+    if (!silencioso && planos.length === 0) setCarregando(true);
     try {
       const [planosData, cursosData] = await Promise.all([
         PlanoService.findAll(),
@@ -61,6 +62,14 @@ export const PlanosScreen: React.FC<Props> = ({ navigation }) => {
       carregarDados();
     }, [carregarDados])
   );
+
+  // Auto-refresh a cada 3.5 segundos para sincronizar novos planos cadastrados na web
+  useEffect(() => {
+    const interval = setInterval(() => {
+      carregarDados(true);
+    }, 3500);
+    return () => clearInterval(interval);
+  }, [carregarDados]);
 
   const abrirCheckout = (plano: Plano) => {
     setPlanoSelecionado(plano);

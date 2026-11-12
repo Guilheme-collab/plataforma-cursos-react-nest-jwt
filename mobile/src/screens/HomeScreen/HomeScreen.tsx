@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -36,6 +36,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const [matriculasIds, setMatriculasIds] = useState<number[]>([]);
   const [notificacoes, setNotificacoes] = useState<Notificacao[]>([]);
   const [naoLidasCount, setNaoLidasCount] = useState<number>(0);
+  const [toastNotificacao, setToastNotificacao] = useState<Notificacao | null>(null);
+  const ultimoIdNotificacaoRef = useRef<number | null>(null);
 
   const [filtroAtivo, setFiltroAtivo] = useState<TipoFiltro>('GERAL');
   const [termoBusca, setTermoBusca] = useState('');
@@ -52,7 +54,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     }
 
     if (!silencioso) {
-      // Apenas exibe o spinner grande na primeira carga
       if (cursos.length === 0 && trilhas.length === 0) setCarregando(true);
     }
 
@@ -66,6 +67,25 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           NotificacaoService.findAll().catch(() => []),
           NotificacaoService.countUnread().catch(() => ({ naoLidas: 0 })),
         ]);
+
+      // Alerta instantâneo com banner flutuante no celular ao receber nova notificação
+      if (ultimoIdNotificacaoRef.current !== null && listaNotif.length > 0) {
+        const nova = listaNotif.find(
+          (n) => n.id > (ultimoIdNotificacaoRef.current || 0) && !n.lida
+        );
+        if (nova) {
+          setToastNotificacao(nova);
+          setTimeout(() => {
+            setToastNotificacao(null);
+          }, 4500);
+        }
+      }
+
+      if (listaNotif.length > 0) {
+        ultimoIdNotificacaoRef.current = Math.max(...listaNotif.map((n) => n.id));
+      } else {
+        ultimoIdNotificacaoRef.current = 0;
+      }
 
       setCursos(listaCursos);
       setTrilhas(listaTrilhas);
@@ -98,12 +118,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     }, [user, carregarDados])
   );
 
-  // Polling em background a cada 6 segundos para atualização automática e em tempo real
+  // Polling ultrarrápido a cada 2.5 segundos para entrega instantânea
   useEffect(() => {
     if (!user) return;
     const interval = setInterval(() => {
       carregarDados(true);
-    }, 6000);
+    }, 2500);
     return () => clearInterval(interval);
   }, [user, carregarDados]);
 
@@ -116,8 +136,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     try {
       await NotificacaoService.markAsRead(id);
       carregarDados(true);
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      console.warn('Erro ao marcar lida:', err?.message || err);
     }
   };
 
@@ -125,8 +145,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     try {
       await NotificacaoService.markAllAsRead();
       carregarDados(true);
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      console.warn('Erro ao marcar todas lidas:', err?.message || err);
     }
   };
 
@@ -196,6 +216,42 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+      {/* Banner Flutuante de Notificação Instantânea (Toast) */}
+      {toastNotificacao && (
+        <TouchableOpacity
+          style={styles.toastBanner}
+          activeOpacity={0.9}
+          onPress={() => {
+            setToastNotificacao(null);
+            setModalNotificacoesAberto(true);
+          }}
+        >
+          <View style={styles.toastBannerIcone}>
+            <Ionicons
+              name={getIconeNotificacao(toastNotificacao.tipo).nome as any}
+              size={20}
+              color={getIconeNotificacao(toastNotificacao.tipo).cor}
+            />
+          </View>
+          <View style={styles.toastBannerConteudo}>
+            <View style={styles.toastBannerTopo}>
+              <Text style={styles.toastBannerTitulo} numberOfLines={1}>
+                {toastNotificacao.titulo}
+              </Text>
+              <View style={styles.badgeKafka}>
+                <Text style={styles.badgeKafkaTexto}>Kafka</Text>
+              </View>
+            </View>
+            <Text style={styles.toastBannerMensagem} numberOfLines={2}>
+              {toastNotificacao.mensagem}
+            </Text>
+          </View>
+          <TouchableOpacity onPress={() => setToastNotificacao(null)}>
+            <Ionicons name="close" size={18} color="#94A3B8" />
+          </TouchableOpacity>
+        </TouchableOpacity>
+      )}
+
       <MenuLateral
         visivel={menuLateralAberto}
         aoFechar={() => setMenuLateralAberto(false)}

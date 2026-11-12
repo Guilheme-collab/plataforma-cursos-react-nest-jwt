@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -37,8 +37,9 @@ export const MinhasMatriculasScreen: React.FC<Props> = ({ navigation }) => {
   const [carregando, setCarregando] = useState(true);
   const [atualizando, setAtualizando] = useState(false);
 
-  const carregarMatriculas = useCallback(async () => {
+  const carregarMatriculas = useCallback(async (silencioso = false) => {
     if (!user?.id) return;
+    if (!silencioso && lista.length === 0) setCarregando(true);
     try {
       const [matriculasData, cursosData, modulosData, aulasData, progressosData] =
         await Promise.all([
@@ -95,6 +96,15 @@ export const MinhasMatriculasScreen: React.FC<Props> = ({ navigation }) => {
       carregarMatriculas();
     }, [carregarMatriculas])
   );
+
+  // Auto-refresh a cada 3 segundos para sincronizar novas matrículas e conclusões
+  useEffect(() => {
+    if (!user) return;
+    const interval = setInterval(() => {
+      carregarMatriculas(true);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [user, carregarMatriculas]);
 
   const onRefresh = () => {
     setAtualizando(true);

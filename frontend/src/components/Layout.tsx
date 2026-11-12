@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
 import { useAuth } from '../contexts/AuthContext';
 import { NotificacaoService } from '../services/notificacao.service';
 import { Notificacao } from '../models/notificacao.model';
@@ -14,6 +14,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
   const [naoLidasCount, setNaoLidasCount] = useState(0);
   const menuRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
+  const ultimoIdRef = useRef<number | null>(null);
 
   const carregarNotificacoes = useCallback(async () => {
     if (!user) return;
@@ -22,6 +23,30 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
         NotificacaoService.findAll(),
         NotificacaoService.countUnread(),
       ]);
+
+      // Detecta novas notificações para alertar com Toast instantâneo
+      if (ultimoIdRef.current !== null && lista.length > 0) {
+        const novas = lista.filter((n) => n.id > (ultimoIdRef.current || 0) && !n.lida);
+        novas.forEach((nova) => {
+          toast.info(
+            <div>
+              <strong className="d-block mb-1">{nova.titulo}</strong>
+              <small className="text-white-50">{nova.mensagem}</small>
+            </div>,
+            {
+              icon: () => <span>🔔</span>,
+              autoClose: 4000,
+            }
+          );
+        });
+      }
+
+      if (lista.length > 0) {
+        ultimoIdRef.current = Math.max(...lista.map((n) => n.id));
+      } else {
+        ultimoIdRef.current = 0;
+      }
+
       setNotificacoes(lista);
       setNaoLidasCount(contagem.naoLidas);
     } catch (err) {
@@ -31,8 +56,8 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     carregarNotificacoes();
-    // Polling a cada 5 segundos para refletir notificações geradas na web ou no mobile via Kafka
-    const interval = setInterval(carregarNotificacoes, 5000);
+    // Polling ultrarrápido a cada 2.5 segundos para entrega instantânea
+    const interval = setInterval(carregarNotificacoes, 2500);
     return () => clearInterval(interval);
   }, [carregarNotificacoes]);
 

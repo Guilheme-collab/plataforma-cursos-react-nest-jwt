@@ -49,16 +49,17 @@ export const styles = StyleSheet.create({
   planoTopo: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     gap: espacamento.sm,
   },
   badgeDuracao: {
-    backgroundColor: cores.destaqueBadge,
-    paddingHorizontal: espacamento.sm,
-    paddingVertical: 4,
+    backgroundColor: '#EEF2FF',
+    borderWidth: 1,
+    borderColor: '#C7D2FE',
+    paddingHorizontal: 12,
+    paddingVertical: 5,
     borderRadius: bordas.redonda,
     flexShrink: 0,
-    alignSelf: 'flex-start',
   },
   badgeDuracaoTexto: {
     color: cores.primaria,
