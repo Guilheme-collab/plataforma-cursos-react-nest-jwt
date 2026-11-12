@@ -450,31 +450,31 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation, route }) => 
         >
           {/* Estatísticas Rápidas */}
           <View style={styles.linhaEstatisticas}>
-            <View style={[styles.cardEstatistica, styles.cardEstatisticaPrimario]}>
-              <View style={styles.cardEstatisticaIcone}>
-                <Ionicons name="trail-sign-outline" size={20} color={cores.branco} />
+            <View style={styles.cardEstatistica}>
+              <View style={[styles.cardEstatisticaIcone, styles.iconeTrilhasBg]}>
+                <Ionicons name="trail-sign-outline" size={20} color={cores.primaria} />
               </View>
-              <View>
+              <View style={styles.cardEstatisticaTextoWrapper}>
                 <Text style={styles.cardEstatisticaNumero}>{trilhas.length}</Text>
                 <Text style={styles.cardEstatisticaRotulo}>Trilhas</Text>
               </View>
             </View>
 
-            <View style={[styles.cardEstatistica, styles.cardEstatisticaSecundario]}>
-              <View style={styles.cardEstatisticaIcone}>
-                <Ionicons name="book-outline" size={20} color={cores.branco} />
+            <View style={styles.cardEstatistica}>
+              <View style={[styles.cardEstatisticaIcone, styles.iconeCursosBg]}>
+                <Ionicons name="book-outline" size={20} color="#10B981" />
               </View>
-              <View>
+              <View style={styles.cardEstatisticaTextoWrapper}>
                 <Text style={styles.cardEstatisticaNumero}>{cursos.length}</Text>
                 <Text style={styles.cardEstatisticaRotulo}>Cursos</Text>
               </View>
             </View>
 
-            <View style={[styles.cardEstatistica, styles.cardEstatisticaTerciario]}>
-              <View style={styles.cardEstatisticaIcone}>
-                <Ionicons name="checkmark-circle-outline" size={20} color={cores.branco} />
+            <View style={styles.cardEstatistica}>
+              <View style={[styles.cardEstatisticaIcone, styles.iconeMatriculadosBg]}>
+                <Ionicons name="checkmark-circle-outline" size={20} color="#F59E0B" />
               </View>
-              <View>
+              <View style={styles.cardEstatisticaTextoWrapper}>
                 <Text style={styles.cardEstatisticaNumero}>{matriculasIds.length}</Text>
                 <Text style={styles.cardEstatisticaRotulo}>Matriculados</Text>
               </View>

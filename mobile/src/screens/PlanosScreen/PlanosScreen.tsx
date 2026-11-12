@@ -172,7 +172,23 @@ export const PlanosScreen: React.FC<Props> = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <View style={styles.cabecalho}>
-        <Text style={styles.titulo}>Planos de Acesso</Text>
+        <View style={styles.cabecalhoLinha}>
+          <TouchableOpacity
+            style={styles.botaoVoltar}
+            onPress={() => {
+              if (navigation.canGoBack()) {
+                navigation.goBack();
+              } else {
+                navigation.navigate('Principal', { screen: 'Início' });
+              }
+            }}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="arrow-back" size={20} color={cores.texto} />
+          </TouchableOpacity>
+          <Text style={styles.titulo}>Planos de Acesso</Text>
+          <View style={styles.espacadorCabecalho} />
+        </View>
         <Text style={styles.subtitulo}>Escolha o plano ideal e turbine seu conhecimento</Text>
       </View>
 

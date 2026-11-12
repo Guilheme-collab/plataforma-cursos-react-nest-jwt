@@ -201,11 +201,7 @@ export const ProgressoScreen: React.FC<Props> = ({ navigation }) => {
             <TouchableOpacity
               style={styles.botaoExplorar}
               onPress={() => {
-                try {
-                  navigation.navigate('Principal', { screen: 'Início' });
-                } catch {
-                  navigation.navigate('Início');
-                }
+                navigation.navigate('Principal', { screen: 'Início' });
               }}
               activeOpacity={0.85}
             >

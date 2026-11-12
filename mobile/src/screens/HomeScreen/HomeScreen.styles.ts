@@ -206,41 +206,46 @@ export const styles = StyleSheet.create({
     flex: 1,
     padding: espacamento.sm,
     borderRadius: bordas.lg,
+    backgroundColor: cores.branco,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
     flexDirection: 'row',
     alignItems: 'center',
     gap: espacamento.sm,
     elevation: 2,
     shadowColor: cores.preto,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.05,
     shadowRadius: 4,
   },
-  cardEstatisticaPrimario: {
-    backgroundColor: cores.primaria,
-  },
-  cardEstatisticaSecundario: {
-    backgroundColor: cores.secundaria,
-  },
-  cardEstatisticaTerciario: {
-    backgroundColor: '#8B5CF6',
+  cardEstatisticaTextoWrapper: {
+    flex: 1,
   },
   cardEstatisticaIcone: {
     width: 36,
     height: 36,
     borderRadius: bordas.redonda,
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  iconeTrilhasBg: {
+    backgroundColor: '#EEF2FF',
+  },
+  iconeCursosBg: {
+    backgroundColor: '#ECFDF5',
+  },
+  iconeMatriculadosBg: {
+    backgroundColor: '#FEF3C7',
   },
   cardEstatisticaNumero: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: cores.branco,
+    color: '#1E293B',
   },
   cardEstatisticaRotulo: {
-    fontSize: 10,
-    color: 'rgba(255, 255, 255, 0.9)',
-    fontWeight: '500',
+    fontSize: 11,
+    color: '#64748B',
+    fontWeight: '600',
   },
   secaoBloco: {
     gap: espacamento.sm,

@@ -5,6 +5,7 @@ import {
   ScrollView,
   RefreshControl,
   ActivityIndicator,
+  TouchableOpacity,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -20,7 +21,11 @@ interface ItemCertificadoComCurso {
   curso?: Curso;
 }
 
-export const CertificadosScreen: React.FC = () => {
+interface Props {
+  navigation: any;
+}
+
+export const CertificadosScreen: React.FC<Props> = ({ navigation }) => {
   const { user } = useAuth();
   const [certificados, setCertificados] = useState<ItemCertificadoComCurso[]>([]);
   const [carregando, setCarregando] = useState(true);
@@ -83,7 +88,23 @@ export const CertificadosScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       <View style={styles.cabecalho}>
-        <Text style={styles.titulo}>Meus Certificados</Text>
+        <View style={styles.cabecalhoLinha}>
+          <TouchableOpacity
+            style={styles.botaoVoltar}
+            onPress={() => {
+              if (navigation.canGoBack()) {
+                navigation.goBack();
+              } else {
+                navigation.navigate('Principal', { screen: 'Início' });
+              }
+            }}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="arrow-back" size={20} color={cores.texto} />
+          </TouchableOpacity>
+          <Text style={styles.titulo}>Meus Certificados</Text>
+          <View style={styles.espacadorCabecalho} />
+        </View>
         <Text style={styles.subtitulo}>Diplomas de conclusão conquistados por você</Text>
       </View>
 

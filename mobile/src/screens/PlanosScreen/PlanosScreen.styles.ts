@@ -14,8 +14,25 @@ export const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: cores.borda,
   },
+  cabecalhoLinha: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+  botaoVoltar: {
+    width: 38,
+    height: 38,
+    borderRadius: bordas.md,
+    backgroundColor: '#F1F5F9',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  espacadorCabecalho: {
+    width: 38,
+  },
   titulo: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: 'bold',
     color: cores.texto,
   },

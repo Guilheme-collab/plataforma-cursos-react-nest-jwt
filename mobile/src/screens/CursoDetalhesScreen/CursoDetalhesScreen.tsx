@@ -214,7 +214,13 @@ export const CursoDetalhesScreen: React.FC<Props> = ({ route, navigation }) => {
       <View style={styles.cabecalhoBarra}>
         <TouchableOpacity
           style={styles.botaoVoltar}
-          onPress={() => navigation.goBack()}
+          onPress={() => {
+            if (navigation.canGoBack()) {
+              navigation.goBack();
+            } else {
+              navigation.navigate('Principal', { screen: 'Início' });
+            }
+          }}
           activeOpacity={0.8}
         >
           <Ionicons name="arrow-back" size={20} color={cores.texto} />
