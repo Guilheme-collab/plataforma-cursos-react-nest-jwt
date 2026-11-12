@@ -23,6 +23,7 @@ model Usuario {
   avaliacoes       Avaliacao[]
   certificados     Certificado[]
   assinaturas      Assinatura[]
+  notificacoes     Notificacao[]
 
   @@map("usuarios")
 }
@@ -219,4 +220,20 @@ model PlanoCurso {
 
   @@id([planoId, cursoId])
   @@map("planos_cursos")
+}
+
+model Notificacao {
+  id          Int      @id @default(autoincrement())
+  usuarioId   Int?
+  roleDestino String?  @default("TODOS") // "USER", "ADMIN", "INSTRUTOR", "TODOS"
+  titulo      String
+  mensagem    String
+  tipo        String   // "BOAS_VINDAS", "PAGAMENTO", "MATRICULA", "NOVO_CURSO", "NOVO_MODULO", "NOVA_TRILHA", "CERTIFICADO", "SISTEMA"
+  lida        Boolean  @default(false)
+  dadosExtras String?
+  dataCriacao DateTime @default(now())
+
+  usuario Usuario? @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@map("notificacoes")
 }

@@ -1,23 +1,92 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import { useAuth } from '../contexts/AuthContext';
+import { NotificacaoService } from '../services/notificacao.service';
+import { Notificacao } from '../models/notificacao.model';
 
 export const Layout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const { user, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [notificacoes, setNotificacoes] = useState<Notificacao[]>([]);
+  const [naoLidasCount, setNaoLidasCount] = useState(0);
   const menuRef = useRef<HTMLDivElement>(null);
+  const notifRef = useRef<HTMLDivElement>(null);
+
+  const carregarNotificacoes = useCallback(async () => {
+    if (!user) return;
+    try {
+      const [lista, contagem] = await Promise.all([
+        NotificacaoService.findAll(),
+        NotificacaoService.countUnread(),
+      ]);
+      setNotificacoes(lista);
+      setNaoLidasCount(contagem.naoLidas);
+    } catch (err) {
+      // Ignora silenciosamente em caso de erro transitório de rede
+    }
+  }, [user]);
+
+  useEffect(() => {
+    carregarNotificacoes();
+    // Polling a cada 5 segundos para refletir notificações geradas na web ou no mobile via Kafka
+    const interval = setInterval(carregarNotificacoes, 5000);
+    return () => clearInterval(interval);
+  }, [carregarNotificacoes]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setMenuOpen(false);
       }
+      if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
+        setNotifOpen(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const handleMarcarComoLida = async (id: number) => {
+    try {
+      await NotificacaoService.markAsRead(id);
+      carregarNotificacoes();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleMarcarTodasComoLidas = async () => {
+    try {
+      await NotificacaoService.markAllAsRead();
+      carregarNotificacoes();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const getIconeNotificacao = (tipo: string) => {
+    switch (tipo) {
+      case 'BOAS_VINDAS':
+        return 'bi-stars text-success';
+      case 'PAGAMENTO':
+        return 'bi-credit-card-fill text-primary';
+      case 'MATRICULA':
+        return 'bi-mortarboard-fill text-info';
+      case 'NOVO_CURSO':
+        return 'bi-book-half text-warning';
+      case 'NOVO_MODULO':
+        return 'bi-collection-play-fill text-info';
+      case 'NOVA_TRILHA':
+        return 'bi-signpost-split-fill text-danger';
+      case 'CERTIFICADO':
+        return 'bi-award-fill text-warning';
+      default:
+        return 'bi-bell-fill text-secondary';
+    }
+  };
 
   const getLinkClass = (path: string) => {
     return `nav-link ${location.pathname === path ? 'active' : ''}`;
@@ -61,6 +130,98 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
               <span className="fw-bold text-secondary me-2">
                 {user?.nomeCompleto} ({user?.role === 'ADMIN' ? 'Admin' : user?.role === 'INSTRUTOR' ? 'Instrutor' : 'Aluno'})
               </span>
+
+              {/* Sino de Notificações (Kafka Mensageria) */}
+              <div className="dropdown position-relative" ref={notifRef}>
+                <button
+                  onClick={() => setNotifOpen(!notifOpen)}
+                  className="btn btn-sm btn-light rounded-circle position-relative"
+                  type="button"
+                  style={{ width: '36px', height: '36px' }}
+                  title="Notificações via Kafka"
+                >
+                  <i className="bi bi-bell-fill text-secondary"></i>
+                  {naoLidasCount > 0 && (
+                    <span
+                      className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-white"
+                      style={{ fontSize: '10px' }}
+                    >
+                      {naoLidasCount > 9 ? '9+' : naoLidasCount}
+                    </span>
+                  )}
+                </button>
+
+                {notifOpen && (
+                  <div
+                    className="dropdown-menu dropdown-menu-end shadow border-0 mt-2 p-0 show"
+                    style={{
+                      position: 'absolute',
+                      right: 0,
+                      top: '100%',
+                      width: '360px',
+                      maxHeight: '440px',
+                      overflowY: 'auto',
+                      borderRadius: '12px',
+                    }}
+                  >
+                    <div className="p-3 border-bottom d-flex justify-content-between align-items-center bg-light rounded-top">
+                      <div className="d-flex align-items-center gap-2">
+                        <i className="bi bi-broadcast text-primary"></i>
+                        <span className="fw-bold fs-6">Notificações (Kafka)</span>
+                      </div>
+                      {naoLidasCount > 0 && (
+                        <button
+                          onClick={handleMarcarTodasComoLidas}
+                          className="btn btn-link btn-sm text-decoration-none p-0 text-primary fw-semibold"
+                          style={{ fontSize: '12px' }}
+                        >
+                          Ler todas
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="list-group list-group-flush">
+                      {notificacoes.length === 0 ? (
+                        <div className="p-4 text-center text-muted">
+                          <i className="bi bi-bell-slash fs-2 d-block mb-2"></i>
+                          <p className="mb-0 fs-6">Nenhuma notificação no momento.</p>
+                        </div>
+                      ) : (
+                        notificacoes.map((n) => (
+                          <div
+                            key={n.id}
+                            onClick={() => handleMarcarComoLida(n.id)}
+                            className={`list-group-item list-group-item-action p-3 d-flex gap-3 align-items-start ${
+                              !n.lida ? 'bg-primary-subtle bg-opacity-25' : ''
+                            }`}
+                            style={{ cursor: 'pointer' }}
+                          >
+                            <i className={`bi ${getIconeNotificacao(n.tipo)} fs-4 mt-1`}></i>
+                            <div className="flex-grow-1">
+                              <div className="d-flex justify-content-between align-items-center mb-1">
+                                <span className={`fw-bold ${!n.lida ? 'text-primary' : 'text-dark'}`} style={{ fontSize: '13px' }}>
+                                  {n.titulo}
+                                </span>
+                                {!n.lida && (
+                                  <span className="badge bg-primary rounded-pill" style={{ fontSize: '8px' }}>
+                                    Nova
+                                  </span>
+                                )}
+                              </div>
+                              <p className="mb-1 text-secondary" style={{ fontSize: '12px', lineHeight: '1.4' }}>
+                                {n.mensagem}
+                              </p>
+                              <span className="text-muted" style={{ fontSize: '10px' }}>
+                                {new Date(n.dataCriacao).toLocaleString('pt-BR')}
+                              </span>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
               
               {/* Menu de Conta */}
               <div className="dropdown position-relative" ref={menuRef}>

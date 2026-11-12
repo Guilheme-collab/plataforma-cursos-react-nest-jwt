@@ -2,10 +2,14 @@ import { Injectable, ConflictException, NotFoundException, InternalServerErrorEx
 import { CreateCertificadoDto } from './dto/create-certificados.dto';
 import { UpdateCertificadoDto } from './dto/update-certificados.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { KafkaService } from '../kafka/kafka.service';
 
 @Injectable()
 export class CertificadoService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private kafkaService: KafkaService,
+  ) {}
 
   async create(createCertificadoDto: CreateCertificadoDto) {
     try {
@@ -67,10 +71,25 @@ export class CertificadoService {
         dataEmissao: (createCertificadoDto as any).dataEmissao ? new Date((createCertificadoDto as any).dataEmissao) : new Date(),
       };
 
-      return await this.prisma.certificado.create({
+      const novoCertificado = await this.prisma.certificado.create({
         data,
         include: { usuario: true, curso: true, trilha: true },
       });
+
+      // 📨 Publicar Notificação de Certificado Emitido via Kafka
+      await this.kafkaService.publicarNotificacao({
+        usuarioId: novoCertificado.usuarioId,
+        roleDestino: 'USER',
+        titulo: '🏆 Certificado Oficial Conquistado!',
+        mensagem: `Parabéns! Você concluiu com sucesso o curso "${novoCertificado.curso?.titulo || ''}". Seu certificado (${novoCertificado.codigoVerificacao}) já está emitido!`,
+        tipo: 'CERTIFICADO',
+        dadosExtras: {
+          certificadoId: novoCertificado.id,
+          codigoVerificacao: novoCertificado.codigoVerificacao,
+        },
+      });
+
+      return novoCertificado;
     } catch (error: any) {
       if (error instanceof ConflictException || error instanceof NotFoundException) {
         throw error;

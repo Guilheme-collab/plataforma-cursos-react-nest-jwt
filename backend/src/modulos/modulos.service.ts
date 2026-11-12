@@ -2,20 +2,36 @@ import { Injectable, ConflictException, NotFoundException, InternalServerErrorEx
 import { CreateModuloDto } from './dto/create-modulos.dto';
 import { UpdateModuloDto } from './dto/update-modulos.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { KafkaService } from '../kafka/kafka.service';
 
 @Injectable()
 export class ModuloService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private kafkaService: KafkaService,
+  ) {}
 
   async create(createModuloDto: CreateModuloDto) {
     try {
 
       const data: any = { ...createModuloDto };
 
-      return await this.prisma.modulo.create({
+      const novoModulo = await this.prisma.modulo.create({
         data,
         include: { curso: true },
       });
+
+      // 📨 Publicar Evento de Novo Módulo no Kafka
+      await this.kafkaService.publicarNotificacao({
+        usuarioId: null,
+        roleDestino: 'USER',
+        titulo: `🧩 Novo Módulo: ${novoModulo.titulo}`,
+        mensagem: `O módulo "${novoModulo.titulo}" foi adicionado ao curso "${novoModulo.curso?.titulo || ''}". Novas aulas disponíveis!`,
+        tipo: 'NOVO_MODULO',
+        dadosExtras: { moduloId: novoModulo.id, cursoId: novoModulo.cursoId },
+      });
+
+      return novoModulo;
     } catch (error: any) {
       if (error instanceof ConflictException || error instanceof NotFoundException) {
         throw error;
@@ -32,7 +48,10 @@ export class ModuloService {
 
   async findAll() {
     return this.prisma.modulo.findMany({
-      include: { curso: true },
+      include: {
+        curso: true,
+        aulas: { orderBy: { ordem: 'asc' } },
+      },
     });
   }
 

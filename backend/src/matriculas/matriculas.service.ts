@@ -2,10 +2,14 @@ import { Injectable, ConflictException, NotFoundException, InternalServerErrorEx
 import { CreateMatriculaDto } from './dto/create-matriculas.dto';
 import { UpdateMatriculaDto } from './dto/update-matriculas.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { KafkaService } from '../kafka/kafka.service';
 
 @Injectable()
 export class MatriculaService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private kafkaService: KafkaService,
+  ) {}
 
   async create(createMatriculaDto: CreateMatriculaDto) {
     try {
@@ -21,10 +25,32 @@ export class MatriculaService {
       const data: any = { ...createMatriculaDto };
       if (data.dataMatricula) data.dataMatricula = new Date(data.dataMatricula);
       if (data.dataConclusao) data.dataConclusao = new Date(data.dataConclusao);
-      return await this.prisma.matricula.create({
+      const novaMatricula = await this.prisma.matricula.create({
         data,
         include: { usuario: true, curso: true },
       });
+
+      // 📨 Publicar Notificação de Matrícula via Kafka
+      await this.kafkaService.publicarNotificacao({
+        usuarioId: novaMatricula.usuarioId,
+        roleDestino: 'USER',
+        titulo: '🎓 Matrícula Realizada com Sucesso!',
+        mensagem: `Você foi matriculado no curso "${novaMatricula.curso?.titulo || ''}". Bons estudos!`,
+        tipo: 'MATRICULA',
+        dadosExtras: { cursoId: novaMatricula.cursoId, matriculaId: novaMatricula.id },
+      });
+
+      // Notificação para o Instrutor e Admin
+      await this.kafkaService.publicarNotificacao({
+        usuarioId: null,
+        roleDestino: 'ADMIN',
+        titulo: '📈 Nova Matrícula em Curso',
+        mensagem: `O aluno "${novaMatricula.usuario?.nomeCompleto || ''}" se matriculou no curso "${novaMatricula.curso?.titulo || ''}".`,
+        tipo: 'MATRICULA',
+        dadosExtras: { cursoId: novaMatricula.cursoId, usuarioId: novaMatricula.usuarioId },
+      });
+
+      return novaMatricula;
     } catch (error: any) {
       if (error instanceof ConflictException || error instanceof NotFoundException) {
         throw error;

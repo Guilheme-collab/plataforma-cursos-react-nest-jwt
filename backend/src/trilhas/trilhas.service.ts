@@ -2,20 +2,36 @@ import { Injectable, ConflictException, NotFoundException, InternalServerErrorEx
 import { CreateTrilhaDto } from './dto/create-trilhas.dto';
 import { UpdateTrilhaDto } from './dto/update-trilhas.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { KafkaService } from '../kafka/kafka.service';
 
 @Injectable()
 export class TrilhaService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private kafkaService: KafkaService,
+  ) {}
 
   async create(createTrilhaDto: CreateTrilhaDto) {
     try {
 
       const data: any = { ...createTrilhaDto };
 
-      return await this.prisma.trilha.create({
+      const novaTrilha = await this.prisma.trilha.create({
         data,
         include: { categoria: true },
       });
+
+      // 📨 Publicar Evento de Nova Trilha no Kafka
+      await this.kafkaService.publicarNotificacao({
+        usuarioId: null,
+        roleDestino: 'USER',
+        titulo: `🗺️ Nova Trilha: ${novaTrilha.titulo}`,
+        mensagem: `Uma nova trilha de aprendizado ("${novaTrilha.titulo}") foi lançada. Siga a sequência recomendada de cursos!`,
+        tipo: 'NOVA_TRILHA',
+        dadosExtras: { trilhaId: novaTrilha.id, titulo: novaTrilha.titulo },
+      });
+
+      return novaTrilha;
     } catch (error: any) {
       if (error instanceof ConflictException || error instanceof NotFoundException) {
         throw error;
@@ -32,7 +48,21 @@ export class TrilhaService {
 
   async findAll() {
     return this.prisma.trilha.findMany({
-      include: { categoria: true },
+      include: {
+        categoria: true,
+        trilhasCursos: {
+          include: {
+            curso: {
+              include: {
+                modulos: {
+                  include: { aulas: true },
+                },
+              },
+            },
+          },
+          orderBy: { ordem: 'asc' },
+        },
+      },
     });
   }
 

@@ -2,11 +2,15 @@ import { Injectable, ConflictException, NotFoundException, InternalServerErrorEx
 import { CreateUsuarioDto } from './dto/create-usuarios.dto';
 import { UpdateUsuarioDto } from './dto/update-usuarios.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { KafkaService } from '../kafka/kafka.service';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsuarioService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private kafkaService: KafkaService,
+  ) {}
 
   async create(createUsuarioDto: CreateUsuarioDto) {
     try {
@@ -26,9 +30,31 @@ export class UsuarioService {
         data.senhaHash = await bcrypt.hash(data.senhaHash, salt);
       }
 
-      return await this.prisma.usuario.create({
+      const novoUsuario = await this.prisma.usuario.create({
         data,
       });
+
+      // 📨 Publicar Notificação de Boas-Vindas via Kafka (20% da Nota de N2)
+      await this.kafkaService.publicarNotificacao({
+        usuarioId: novoUsuario.id,
+        roleDestino: 'USER',
+        titulo: '🎉 Bem-vindo(a) à Plataforma EAD!',
+        mensagem: `Olá, ${novoUsuario.nomeCompleto}! Sua conta foi criada com sucesso via mensageria Kafka. Explore nossos cursos e trilhas para começar seus estudos!`,
+        tipo: 'BOAS_VINDAS',
+        dadosExtras: { usuarioId: novoUsuario.id, email: novoUsuario.email },
+      });
+
+      // Notificação para o Administrador
+      await this.kafkaService.publicarNotificacao({
+        usuarioId: null,
+        roleDestino: 'ADMIN',
+        titulo: '👤 Novo Aluno Cadastrado',
+        mensagem: `O usuário ${novoUsuario.nomeCompleto} (${novoUsuario.email}) acabou de se cadastrar na plataforma.`,
+        tipo: 'BOAS_VINDAS',
+        dadosExtras: { usuarioId: novoUsuario.id, email: novoUsuario.email },
+      });
+
+      return novoUsuario;
     } catch (error: any) {
       if (error instanceof ConflictException || error instanceof NotFoundException) {
         throw error;

@@ -15,9 +15,13 @@ import { CertificadoModule } from './certificados/certificados.module';
 import { PlanoModule } from './planos/planos.module';
 import { AssinaturaModule } from './assinaturas/assinaturas.module';
 import { PagamentoModule } from './pagamentos/pagamentos.module';
+import { KafkaModule } from './kafka/kafka.module';
+import { NotificacoesModule } from './notificacoes/notificacoes.module';
 
 @Module({
   imports: [
+    KafkaModule,
+    NotificacoesModule,
     AuthModule,
     PrismaModule,
     UsuarioModule,

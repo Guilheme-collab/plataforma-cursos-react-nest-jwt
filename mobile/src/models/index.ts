@@ -118,3 +118,32 @@ export interface Pagamento {
   metodoPagamento: string;
   idTransacaoGateway: string;
 }
+
+export interface TrilhaCurso {
+  id: number;
+  trilhaId: number;
+  cursoId: number;
+  ordem: number;
+  curso?: Curso;
+}
+
+export interface Trilha {
+  id: number;
+  titulo: string;
+  descricao: string;
+  categoriaId: number;
+  categoria?: Categoria;
+  trilhasCursos?: TrilhaCurso[];
+}
+
+export interface Notificacao {
+  id: number;
+  usuarioId?: number | null;
+  roleDestino?: string | null;
+  titulo: string;
+  mensagem: string;
+  tipo: 'BOAS_VINDAS' | 'PAGAMENTO' | 'MATRICULA' | 'NOVO_CURSO' | 'NOVO_MODULO' | 'NOVA_TRILHA' | 'CERTIFICADO' | 'SISTEMA';
+  lida: boolean;
+  dadosExtras?: string | null;
+  dataCriacao: string;
+}

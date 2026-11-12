@@ -2,10 +2,14 @@ import { Injectable, ConflictException, NotFoundException, InternalServerErrorEx
 import { CreatePagamentoDto } from './dto/create-pagamentos.dto';
 import { UpdatePagamentoDto } from './dto/update-pagamentos.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { KafkaService } from '../kafka/kafka.service';
 
 @Injectable()
 export class PagamentoService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private kafkaService: KafkaService,
+  ) {}
 
   async create(createPagamentoDto: CreatePagamentoDto) {
     try {
@@ -19,10 +23,34 @@ export class PagamentoService {
       }
       const data: any = { ...createPagamentoDto };
       if (data.dataPagamento) data.dataPagamento = new Date(data.dataPagamento);
-      return await this.prisma.pagamento.create({
+      const novoPagamento = await this.prisma.pagamento.create({
         data,
         include: { assinatura: { include: { usuario: true, plano: true } } },
       });
+
+      // 📨 Publicar Notificação de Pagamento via Kafka
+      if (novoPagamento.assinatura?.usuarioId) {
+        await this.kafkaService.publicarNotificacao({
+          usuarioId: novoPagamento.assinatura.usuarioId,
+          roleDestino: 'USER',
+          titulo: '💳 Pagamento Confirmado!',
+          mensagem: `Seu pagamento de R$ ${novoPagamento.valorPago.toFixed(2)} referente ao plano "${novoPagamento.assinatura.plano?.nome || 'Plano'}" foi aprovado com sucesso!`,
+          tipo: 'PAGAMENTO',
+          dadosExtras: { pagamentoId: novoPagamento.id, valor: novoPagamento.valorPago },
+        });
+
+        // Notificação para o Admin
+        await this.kafkaService.publicarNotificacao({
+          usuarioId: null,
+          roleDestino: 'ADMIN',
+          titulo: '💰 Novo Pagamento Aprovado',
+          mensagem: `Pagamento de R$ ${novoPagamento.valorPago.toFixed(2)} recebido do usuário "${novoPagamento.assinatura.usuario?.nomeCompleto || ''}".`,
+          tipo: 'PAGAMENTO',
+          dadosExtras: { pagamentoId: novoPagamento.id, valor: novoPagamento.valorPago },
+        });
+      }
+
+      return novoPagamento;
     } catch (error: any) {
       if (error instanceof ConflictException || error instanceof NotFoundException) {
         throw error;
