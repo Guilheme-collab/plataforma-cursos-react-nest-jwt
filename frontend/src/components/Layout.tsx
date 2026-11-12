@@ -24,24 +24,39 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
         NotificacaoService.countUnread(),
       ]);
 
-      // Detecta novas notificações para alertar com Toast instantâneo
-      if (ultimoIdRef.current !== null && lista.length > 0) {
-        const novas = lista.filter((n) => n.id > (ultimoIdRef.current || 0) && !n.lida);
-        novas.forEach((nova) => {
-          toast.info(
-            <div>
-              <strong className="d-block mb-1">{nova.titulo}</strong>
-              <small className="text-white-50">{nova.mensagem}</small>
-            </div>,
-            {
-              icon: () => <span>🔔</span>,
-              autoClose: 4000,
-            }
-          );
-        });
-      }
-
+      // Detecta notificações para alertar com Toast instantâneo
       if (lista.length > 0) {
+        if (ultimoIdRef.current !== null) {
+          const novas = lista.filter((n) => n.id > (ultimoIdRef.current || 0) && !n.lida);
+          novas.forEach((nova) => {
+            toast.info(
+              <div>
+                <strong className="d-block mb-1">{nova.titulo}</strong>
+                <small className="text-white-50">{nova.mensagem}</small>
+              </div>,
+              {
+                icon: () => <span>🔔</span>,
+                autoClose: 4000,
+              }
+            );
+          });
+        } else {
+          // No primeiro carregamento, se houver notificação não lida recente, exibe Toast de boas-vindas
+          const naoLidas = lista.filter((n) => !n.lida);
+          if (naoLidas.length > 0) {
+            const primeira = naoLidas[0];
+            toast.info(
+              <div>
+                <strong className="d-block mb-1">{primeira.titulo}</strong>
+                <small className="text-white-50">{primeira.mensagem}</small>
+              </div>,
+              {
+                icon: () => <span>🔔</span>,
+                autoClose: 4500,
+              }
+            );
+          }
+        }
         ultimoIdRef.current = Math.max(...lista.map((n) => n.id));
       } else {
         ultimoIdRef.current = 0;
@@ -56,8 +71,8 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     carregarNotificacoes();
-    // Polling ultrarrápido a cada 2.5 segundos para entrega instantânea
-    const interval = setInterval(carregarNotificacoes, 2500);
+    // Polling ultrarrápido a cada 1.5 segundos para entrega instantânea
+    const interval = setInterval(carregarNotificacoes, 1500);
     return () => clearInterval(interval);
   }, [carregarNotificacoes]);
 

@@ -68,20 +68,28 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           NotificacaoService.countUnread().catch(() => ({ naoLidas: 0 })),
         ]);
 
-      // Alerta instantâneo com banner flutuante no celular ao receber nova notificação
-      if (ultimoIdNotificacaoRef.current !== null && listaNotif.length > 0) {
-        const nova = listaNotif.find(
-          (n) => n.id > (ultimoIdNotificacaoRef.current || 0) && !n.lida
-        );
-        if (nova) {
-          setToastNotificacao(nova);
-          setTimeout(() => {
-            setToastNotificacao(null);
-          }, 4500);
-        }
-      }
-
+      // Alerta instantâneo com banner flutuante no celular ao receber notificação
       if (listaNotif.length > 0) {
+        if (ultimoIdNotificacaoRef.current !== null) {
+          const nova = listaNotif.find(
+            (n) => n.id > (ultimoIdNotificacaoRef.current || 0) && !n.lida
+          );
+          if (nova) {
+            setToastNotificacao(nova);
+            setTimeout(() => {
+              setToastNotificacao(null);
+            }, 5000);
+          }
+        } else {
+          // No primeiro carregamento, se houver notificação não lida (ex: Boas-vindas Kafka), exibe na hora!
+          const recenteNaoLida = listaNotif.find((n) => !n.lida);
+          if (recenteNaoLida) {
+            setToastNotificacao(recenteNaoLida);
+            setTimeout(() => {
+              setToastNotificacao(null);
+            }, 5000);
+          }
+        }
         ultimoIdNotificacaoRef.current = Math.max(...listaNotif.map((n) => n.id));
       } else {
         ultimoIdNotificacaoRef.current = 0;
@@ -118,12 +126,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     }, [user, carregarDados])
   );
 
-  // Polling ultrarrápido a cada 2.5 segundos para entrega instantânea
+  // Polling ultrarrápido a cada 1.5 segundos para entrega instantânea
   useEffect(() => {
     if (!user) return;
     const interval = setInterval(() => {
       carregarDados(true);
-    }, 2500);
+    }, 1500);
     return () => clearInterval(interval);
   }, [user, carregarDados]);
 
