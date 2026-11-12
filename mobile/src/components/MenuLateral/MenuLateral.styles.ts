@@ -90,6 +90,16 @@ export const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: espacamento.md,
   },
+  secaoTituloMenu: {
+    fontSize: 11,
+    fontWeight: 'bold',
+    color: '#94A3B8',
+    letterSpacing: 0.8,
+    paddingHorizontal: espacamento.lg,
+    marginTop: espacamento.md,
+    marginBottom: espacamento.xs,
+    textTransform: 'uppercase',
+  },
   itemMenu: {
     flexDirection: 'row',
     alignItems: 'center',

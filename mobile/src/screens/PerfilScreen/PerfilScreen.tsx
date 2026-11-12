@@ -175,6 +175,42 @@ export const PerfilScreen: React.FC<Props> = ({ navigation }) => {
 
           <TouchableOpacity
             style={styles.itemAcaoNavegacao}
+            onPress={() => navigation.navigate('MinhaAssinatura')}
+            activeOpacity={0.8}
+          >
+            <View style={styles.itemAcaoEsquerda}>
+              <Ionicons name="calendar-outline" size={20} color={cores.primaria} />
+              <Text style={styles.itemAcaoTexto}>Minha Assinatura Ativa</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={cores.cinza} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.itemAcaoNavegacao}
+            onPress={() => navigation.navigate('Progresso')}
+            activeOpacity={0.8}
+          >
+            <View style={styles.itemAcaoEsquerda}>
+              <Ionicons name="stats-chart-outline" size={20} color={cores.primaria} />
+              <Text style={styles.itemAcaoTexto}>Meu Progresso e Desempenho</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={cores.cinza} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.itemAcaoNavegacao}
+            onPress={() => navigation.navigate('Avaliacoes')}
+            activeOpacity={0.8}
+          >
+            <View style={styles.itemAcaoEsquerda}>
+              <Ionicons name="star-outline" size={20} color={cores.primaria} />
+              <Text style={styles.itemAcaoTexto}>Minhas Avaliações de Cursos</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={cores.cinza} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.itemAcaoNavegacao}
             onPress={() => navigation.navigate('Certificados')}
             activeOpacity={0.8}
           >

@@ -5,6 +5,51 @@ import { useAuth } from '../contexts/AuthContext';
 import { NotificacaoService } from '../services/notificacao.service';
 import { Notificacao } from '../models/notificacao.model';
 
+function dispararNotificacaoNativaWeb(titulo: string, mensagem: string, id: number) {
+  // 1. Toca som de notificação (apito) via Web Audio API
+  try {
+    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+    if (AudioCtx) {
+      const ctx = new AudioCtx();
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(587.33, now);
+      osc.frequency.exponentialRampToValueAtTime(880, now + 0.15);
+      gain.gain.setValueAtTime(0.18, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.35);
+    }
+  } catch (e) {}
+
+  // 2. Dispara notificação nativa do sistema (Windows Action Center / Mac Notification)
+  try {
+    if ('Notification' in window) {
+      if (Notification.permission === 'granted') {
+        new Notification(titulo, {
+          body: mensagem,
+          icon: '/favicon.ico',
+          tag: `notif-${id}`,
+        });
+      } else if (Notification.permission === 'default') {
+        Notification.requestPermission().then((perm) => {
+          if (perm === 'granted') {
+            new Notification(titulo, {
+              body: mensagem,
+              icon: '/favicon.ico',
+              tag: `notif-${id}`,
+            });
+          }
+        });
+      }
+    }
+  } catch (e) {}
+}
+
 export const Layout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const { user, logout } = useAuth();
@@ -29,6 +74,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
         if (ultimoIdRef.current !== null) {
           const novas = lista.filter((n) => n.id > (ultimoIdRef.current || 0) && !n.lida);
           novas.forEach((nova) => {
+            dispararNotificacaoNativaWeb(nova.titulo, nova.mensagem, nova.id);
             toast.info(
               <div>
                 <strong className="d-block mb-1">{nova.titulo}</strong>
@@ -45,6 +91,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
           const naoLidas = lista.filter((n) => !n.lida);
           if (naoLidas.length > 0) {
             const primeira = naoLidas[0];
+            dispararNotificacaoNativaWeb(primeira.titulo, primeira.mensagem, primeira.id);
             toast.info(
               <div>
                 <strong className="d-block mb-1">{primeira.titulo}</strong>

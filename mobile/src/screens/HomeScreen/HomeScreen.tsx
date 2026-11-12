@@ -17,6 +17,7 @@ import { TrilhaService } from '../../services/trilha.service';
 import { ModuloService } from '../../services/modulo.service';
 import { MatriculaService } from '../../services/matricula.service';
 import { NotificacaoService } from '../../services/notificacao.service';
+import { AppNotificationService } from '../../services/notification.service';
 import { Curso, Trilha, Modulo, Notificacao } from '../../models';
 import { cores } from '../../styles/theme';
 import { styles } from './HomeScreen.styles';
@@ -76,6 +77,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           );
           if (nova) {
             setToastNotificacao(nova);
+            AppNotificationService.dispararNotificacaoLocal(nova);
             setTimeout(() => {
               setToastNotificacao(null);
             }, 5000);
@@ -85,6 +87,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           const recenteNaoLida = listaNotif.find((n) => !n.lida);
           if (recenteNaoLida) {
             setToastNotificacao(recenteNaoLida);
+            AppNotificationService.dispararNotificacaoLocal(recenteNaoLida);
             setTimeout(() => {
               setToastNotificacao(null);
             }, 5000);

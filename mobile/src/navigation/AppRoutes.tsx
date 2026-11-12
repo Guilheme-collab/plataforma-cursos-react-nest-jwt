@@ -8,6 +8,9 @@ import { AulaPlayerScreen } from '../screens/AulaPlayerScreen/AulaPlayerScreen';
 import { CertificadosScreen } from '../screens/CertificadosScreen/CertificadosScreen';
 import { PlanosScreen } from '../screens/PlanosScreen/PlanosScreen';
 import { MinhasMatriculasScreen } from '../screens/MinhasMatriculasScreen/MinhasMatriculasScreen';
+import { MinhaAssinaturaScreen } from '../screens/MinhaAssinaturaScreen/MinhaAssinaturaScreen';
+import { ProgressoScreen } from '../screens/ProgressoScreen/ProgressoScreen';
+import { MinhasAvaliacoesScreen } from '../screens/MinhasAvaliacoesScreen/MinhasAvaliacoesScreen';
 import { useAuth } from '../contexts/AuthContext';
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
 import { cores } from '../styles/theme';
@@ -50,6 +53,9 @@ export const AppRoutes: React.FC = () => {
           <Stack.Screen name="Certificados" component={CertificadosScreen} />
           <Stack.Screen name="Planos" component={PlanosScreen} />
           <Stack.Screen name="Matrículas" component={MinhasMatriculasScreen} />
+          <Stack.Screen name="MinhaAssinatura" component={MinhaAssinaturaScreen} />
+          <Stack.Screen name="Progresso" component={ProgressoScreen} />
+          <Stack.Screen name="Avaliacoes" component={MinhasAvaliacoesScreen} />
         </>
       ) : (
         // Rotas públicas de Autenticação

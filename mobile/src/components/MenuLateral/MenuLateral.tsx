@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   ScrollView,
   TouchableWithoutFeedback,
-  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
@@ -37,7 +36,11 @@ export const MenuLateral: React.FC<MenuLateralProps> = ({
 
   const navegarPara = (nomeRota: string) => {
     aoFechar();
-    navigation.navigate(nomeRota);
+    try {
+      navigation.navigate(nomeRota);
+    } catch {
+      navigation.navigate('Principal', { screen: nomeRota });
+    }
   };
 
   const handleSair = async () => {
@@ -50,36 +53,103 @@ export const MenuLateral: React.FC<MenuLateralProps> = ({
     }
   };
 
-  const itensMenu = [
+  // Seções organizadas exatamente como no painel Web
+  const secoesMenu = [
     {
-      nome: 'Início',
-      icone: 'home-outline' as const,
-      iconeAtivo: 'home' as const,
-      descricao: 'Catálogo de Cursos',
+      titulo: 'Dashboard',
+      itens: [
+        {
+          nome: 'Início',
+          icone: 'grid-outline' as const,
+          iconeAtivo: 'grid' as const,
+          descricao: 'Painel Principal e Catálogo',
+        },
+      ],
     },
     {
-      nome: 'Matrículas',
-      icone: 'school-outline' as const,
-      iconeAtivo: 'school' as const,
-      descricao: 'Meus Cursos em Andamento',
+      titulo: 'Conteúdo do Curso',
+      itens: [
+        {
+          nome: 'Início',
+          label: 'Cursos',
+          icone: 'book-outline' as const,
+          iconeAtivo: 'book' as const,
+          descricao: 'Catálogo de Cursos',
+        },
+        {
+          nome: 'Início',
+          label: 'Módulos',
+          icone: 'layers-outline' as const,
+          iconeAtivo: 'layers' as const,
+          descricao: 'Módulos de Aprendizado',
+        },
+        {
+          nome: 'Matrículas',
+          label: 'Aulas',
+          icone: 'play-circle-outline' as const,
+          iconeAtivo: 'play-circle' as const,
+          descricao: 'Assistir Aulas dos Cursos',
+        },
+      ],
     },
     {
-      nome: 'Planos',
-      icone: 'card-outline' as const,
-      iconeAtivo: 'card' as const,
-      descricao: 'Planos de Acesso',
+      titulo: 'Planos & Assinaturas',
+      itens: [
+        {
+          nome: 'Planos',
+          label: 'Planos da Plataforma',
+          icone: 'card-outline' as const,
+          iconeAtivo: 'card' as const,
+          descricao: 'Planos e Preços Disponíveis',
+        },
+        {
+          nome: 'MinhaAssinatura',
+          label: 'Minha Assinatura',
+          icone: 'calendar-outline' as const,
+          iconeAtivo: 'calendar' as const,
+          descricao: 'Meu Plano Ativo e Vigência',
+        },
+      ],
     },
     {
-      nome: 'Certificados',
-      icone: 'ribbon-outline' as const,
-      iconeAtivo: 'ribbon' as const,
-      descricao: 'Certificados Conquistados',
-    },
-    {
-      nome: 'Perfil',
-      icone: 'person-outline' as const,
-      iconeAtivo: 'person' as const,
-      descricao: 'Meu Perfil de Aluno',
+      titulo: 'Minha Área',
+      itens: [
+        {
+          nome: 'Matrículas',
+          label: 'Matrículas',
+          icone: 'school-outline' as const,
+          iconeAtivo: 'school' as const,
+          descricao: 'Meus Cursos Matriculados',
+        },
+        {
+          nome: 'Progresso',
+          label: 'Progresso',
+          icone: 'stats-chart-outline' as const,
+          iconeAtivo: 'stats-chart' as const,
+          descricao: 'Desempenho e Aulas Concluídas',
+        },
+        {
+          nome: 'Avaliacoes',
+          label: 'Avaliações',
+          icone: 'star-outline' as const,
+          iconeAtivo: 'star' as const,
+          descricao: 'Minhas Avaliações e Notas',
+        },
+        {
+          nome: 'Certificados',
+          label: 'Certificados',
+          icone: 'ribbon-outline' as const,
+          iconeAtivo: 'ribbon' as const,
+          descricao: 'Certificados Conquistados',
+        },
+        {
+          nome: 'Perfil',
+          label: 'Meu Perfil',
+          icone: 'person-outline' as const,
+          iconeAtivo: 'person' as const,
+          descricao: 'Dados da Minha Conta',
+        },
+      ],
     },
   ];
 
@@ -120,44 +190,50 @@ export const MenuLateral: React.FC<MenuLateralProps> = ({
           </View>
 
           <ScrollView style={styles.drawerCorpo} showsVerticalScrollIndicator={false}>
-            {itensMenu.map((item) => {
-              const ativo = rotaAtiva === item.nome;
-              return (
-                <TouchableOpacity
-                  key={item.nome}
-                  style={[styles.itemMenu, ativo && styles.itemMenuAtivo]}
-                  onPress={() => navegarPara(item.nome)}
-                  activeOpacity={0.7}
-                >
-                  <View
-                    style={[
-                      styles.itemMenuIconeContainer,
-                      ativo && styles.itemMenuIconeContainerAtivo,
-                    ]}
-                  >
-                    <Ionicons
-                      name={ativo ? item.iconeAtivo : item.icone}
-                      size={20}
-                      color={ativo ? cores.branco : cores.primaria}
-                    />
-                  </View>
-                  <Text style={[styles.itemMenuTexto, ativo && styles.itemMenuTextoAtivo]}>
-                    {item.nome}
-                  </Text>
-                  <Ionicons
-                    name="chevron-forward"
-                    size={16}
-                    color={ativo ? cores.primaria : cores.cinza}
-                  />
-                </TouchableOpacity>
-              );
-            })}
+            {secoesMenu.map((secao) => (
+              <View key={secao.titulo}>
+                <Text style={styles.secaoTituloMenu}>{secao.titulo}</Text>
+                {secao.itens.map((item, idx) => {
+                  const label = (item as any).label || item.nome;
+                  const ativo = rotaAtiva === item.nome || rotaAtiva === label;
+                  return (
+                    <TouchableOpacity
+                      key={`${secao.titulo}-${label}-${idx}`}
+                      style={[styles.itemMenu, ativo && styles.itemMenuAtivo]}
+                      onPress={() => navegarPara(item.nome)}
+                      activeOpacity={0.7}
+                    >
+                      <View
+                        style={[
+                          styles.itemMenuIconeContainer,
+                          ativo && styles.itemMenuIconeContainerAtivo,
+                        ]}
+                      >
+                        <Ionicons
+                          name={ativo ? item.iconeAtivo : item.icone}
+                          size={18}
+                          color={ativo ? cores.branco : cores.primaria}
+                        />
+                      </View>
+                      <Text style={[styles.itemMenuTexto, ativo && styles.itemMenuTextoAtivo]}>
+                        {label}
+                      </Text>
+                      <Ionicons
+                        name="chevron-forward"
+                        size={14}
+                        color={ativo ? cores.primaria : cores.cinza}
+                      />
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            ))}
 
             <View style={styles.divisor} />
 
             <View style={styles.statusSincronizacao}>
               <View style={styles.statusDot} />
-              <Text style={styles.statusTexto}>Banco de Dados Web Sincronizado</Text>
+              <Text style={styles.statusTexto}>Banco e Kafka Sincronizados</Text>
             </View>
           </ScrollView>
 
