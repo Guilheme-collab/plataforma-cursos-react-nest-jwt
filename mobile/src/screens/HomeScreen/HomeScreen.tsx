@@ -25,11 +25,12 @@ import { MenuLateral } from '../../components/MenuLateral/MenuLateral';
 
 interface HomeScreenProps {
   navigation: any;
+  route?: any;
 }
 
 type TipoFiltro = 'GERAL' | 'TRILHAS' | 'MEUS_CURSOS' | 'CURSOS' | 'MODULOS';
 
-export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
+export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation, route }) => {
   const { user, logout } = useAuth();
   const [cursos, setCursos] = useState<Curso[]>([]);
   const [trilhas, setTrilhas] = useState<Trilha[]>([]);
@@ -41,6 +42,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const ultimoIdNotificacaoRef = useRef<number | null>(null);
 
   const [filtroAtivo, setFiltroAtivo] = useState<TipoFiltro>('GERAL');
+
+  useEffect(() => {
+    if (route?.params?.filtro) {
+      setFiltroAtivo(route.params.filtro);
+    }
+  }, [route?.params?.filtro]);
   const [termoBusca, setTermoBusca] = useState('');
   const [carregando, setCarregando] = useState(true);
   const [atualizando, setAtualizando] = useState(false);

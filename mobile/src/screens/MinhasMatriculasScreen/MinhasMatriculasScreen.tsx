@@ -148,7 +148,13 @@ export const MinhasMatriculasScreen: React.FC<Props> = ({ navigation }) => {
             </Text>
             <TouchableOpacity
               style={styles.botaoExplorarCursos}
-              onPress={() => navigation.navigate('Início')}
+              onPress={() => {
+                try {
+                  navigation.navigate('Principal', { screen: 'Início' });
+                } catch {
+                  navigation.navigate('Início');
+                }
+              }}
               activeOpacity={0.85}
             >
               <Text style={styles.botaoExplorarCursosTexto}>Explorar Catálogo</Text>

@@ -106,7 +106,13 @@ export const MinhaAssinaturaScreen: React.FC<Props> = ({ navigation }) => {
       <View style={styles.cabecalho}>
         <TouchableOpacity
           style={styles.botaoVoltar}
-          onPress={() => navigation.navigate('Início')}
+          onPress={() => {
+            if (navigation.canGoBack()) {
+              navigation.goBack();
+            } else {
+              navigation.navigate('Principal', { screen: 'Início' });
+            }
+          }}
           activeOpacity={0.8}
         >
           <Ionicons name="arrow-back" size={20} color={cores.texto} />
@@ -163,7 +169,13 @@ export const MinhaAssinaturaScreen: React.FC<Props> = ({ navigation }) => {
 
             <TouchableOpacity
               style={styles.botaoVerPlanos}
-              onPress={() => navigation.navigate('Planos')}
+              onPress={() => {
+                try {
+                  navigation.navigate('Principal', { screen: 'Planos' });
+                } catch {
+                  navigation.navigate('Planos');
+                }
+              }}
               activeOpacity={0.85}
             >
               <Ionicons name="card-outline" size={18} color={cores.branco} />
@@ -181,7 +193,13 @@ export const MinhaAssinaturaScreen: React.FC<Props> = ({ navigation }) => {
             </Text>
             <TouchableOpacity
               style={styles.botaoAssinarAgora}
-              onPress={() => navigation.navigate('Planos')}
+              onPress={() => {
+                try {
+                  navigation.navigate('Principal', { screen: 'Planos' });
+                } catch {
+                  navigation.navigate('Planos');
+                }
+              }}
               activeOpacity={0.85}
             >
               <Ionicons name="rocket-outline" size={18} color={cores.branco} />

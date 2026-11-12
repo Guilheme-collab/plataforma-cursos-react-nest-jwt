@@ -5,7 +5,6 @@ import { Notificacao } from '../models';
 // Configura como as notificações são tratadas quando o app está aberto ou em segundo plano
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: true,
     shouldShowBanner: true,
@@ -28,26 +27,27 @@ export const AppNotificationService = {
       }
 
       if (finalStatus !== 'granted') {
-        console.warn('Permissão de notificações não concedida pelo usuário.');
         return false;
       }
 
-      // No Android, cria canal com prioridade máxima e som (estilo WhatsApp)
+      // No Android, configura canal com prioridade máxima e som (estilo WhatsApp)
       if (Platform.OS === 'android') {
-        await Notifications.setNotificationChannelAsync('plataforma-notificacoes', {
-          name: 'Notificações da Plataforma EAD',
-          importance: Notifications.AndroidImportance.MAX,
-          vibrationPattern: [0, 250, 250, 250],
-          lightColor: '#6C5CE7',
-          sound: 'default',
-          enableVibrate: true,
-          showBadge: true,
-        });
+        try {
+          await Notifications.setNotificationChannelAsync('plataforma-notificacoes', {
+            name: 'Notificações da Plataforma EAD',
+            importance: Notifications.AndroidImportance.MAX,
+            vibrationPattern: [0, 250, 250, 250],
+            lightColor: '#6C5CE7',
+            enableVibrate: true,
+            showBadge: true,
+          });
+        } catch {
+          // Em ambientes como Expo Go, o canal padrão é utilizado automaticamente pelo sistema
+        }
       }
 
       return true;
-    } catch (error) {
-      console.warn('Erro ao inicializar notificações nativas:', error);
+    } catch {
       return false;
     }
   },
@@ -63,7 +63,7 @@ export const AppNotificationService = {
           title: notif.titulo,
           body: notif.mensagem,
           data: { id: notif.id, tipo: notif.tipo, ...extras },
-          sound: 'default',
+          sound: true,
           priority: Notifications.AndroidNotificationPriority.MAX,
           vibrate: [0, 250, 250, 250],
         },

@@ -83,7 +83,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) =>
         }
       }, 1200);
     } catch (error: any) {
-      console.error('Erro no cadastro:', error);
+      console.warn('Tentativa de cadastro com erro:', error?.response?.data?.message || error?.message);
       const msg = error.response?.data?.message || 'Erro ao realizar cadastro.';
       setMensagemErro(Array.isArray(msg) ? msg[0] : msg);
     } finally {

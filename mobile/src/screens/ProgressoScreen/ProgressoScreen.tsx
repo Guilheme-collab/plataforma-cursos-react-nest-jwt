@@ -137,7 +137,13 @@ export const ProgressoScreen: React.FC<Props> = ({ navigation }) => {
       <View style={styles.cabecalho}>
         <TouchableOpacity
           style={styles.botaoVoltar}
-          onPress={() => navigation.navigate('Início')}
+          onPress={() => {
+            if (navigation.canGoBack()) {
+              navigation.goBack();
+            } else {
+              navigation.navigate('Principal', { screen: 'Início' });
+            }
+          }}
           activeOpacity={0.8}
         >
           <Ionicons name="arrow-back" size={20} color={cores.texto} />
@@ -194,7 +200,13 @@ export const ProgressoScreen: React.FC<Props> = ({ navigation }) => {
             </Text>
             <TouchableOpacity
               style={styles.botaoExplorar}
-              onPress={() => navigation.navigate('Início')}
+              onPress={() => {
+                try {
+                  navigation.navigate('Principal', { screen: 'Início' });
+                } catch {
+                  navigation.navigate('Início');
+                }
+              }}
               activeOpacity={0.85}
             >
               <Text style={styles.botaoExplorarTexto}>Explorar Catálogo</Text>

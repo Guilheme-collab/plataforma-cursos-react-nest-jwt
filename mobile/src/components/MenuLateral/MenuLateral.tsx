@@ -34,12 +34,24 @@ export const MenuLateral: React.FC<MenuLateralProps> = ({
     return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase();
   };
 
-  const navegarPara = (nomeRota: string) => {
+  const navegarPara = (item: any) => {
     aoFechar();
-    try {
-      navigation.navigate(nomeRota);
-    } catch {
-      navigation.navigate('Principal', { screen: nomeRota });
+    const nomeRota = typeof item === 'string' ? item : item.nome;
+    const params = typeof item === 'object' ? item.params : undefined;
+    const rotasTab = ['Início', 'Matrículas', 'Planos', 'Certificados', 'Perfil'];
+
+    if (rotasTab.includes(nomeRota)) {
+      try {
+        navigation.navigate('Principal', { screen: nomeRota, params });
+      } catch {
+        navigation.navigate(nomeRota, params);
+      }
+    } else {
+      try {
+        navigation.navigate(nomeRota, params);
+      } catch {
+        navigation.navigate('Principal', { screen: nomeRota, params });
+      }
     }
   };
 
@@ -60,6 +72,7 @@ export const MenuLateral: React.FC<MenuLateralProps> = ({
       itens: [
         {
           nome: 'Início',
+          params: { filtro: 'GERAL' },
           icone: 'grid-outline' as const,
           iconeAtivo: 'grid' as const,
           descricao: 'Painel Principal e Catálogo',
@@ -71,6 +84,7 @@ export const MenuLateral: React.FC<MenuLateralProps> = ({
       itens: [
         {
           nome: 'Início',
+          params: { filtro: 'CURSOS' },
           label: 'Cursos',
           icone: 'book-outline' as const,
           iconeAtivo: 'book' as const,
@@ -78,6 +92,7 @@ export const MenuLateral: React.FC<MenuLateralProps> = ({
         },
         {
           nome: 'Início',
+          params: { filtro: 'MODULOS' },
           label: 'Módulos',
           icone: 'layers-outline' as const,
           iconeAtivo: 'layers' as const,
@@ -200,7 +215,7 @@ export const MenuLateral: React.FC<MenuLateralProps> = ({
                     <TouchableOpacity
                       key={`${secao.titulo}-${label}-${idx}`}
                       style={[styles.itemMenu, ativo && styles.itemMenuAtivo]}
-                      onPress={() => navegarPara(item.nome)}
+                      onPress={() => navegarPara(item)}
                       activeOpacity={0.7}
                     >
                       <View

@@ -11,6 +11,7 @@ import { MinhasMatriculasScreen } from '../screens/MinhasMatriculasScreen/Minhas
 import { MinhaAssinaturaScreen } from '../screens/MinhaAssinaturaScreen/MinhaAssinaturaScreen';
 import { ProgressoScreen } from '../screens/ProgressoScreen/ProgressoScreen';
 import { MinhasAvaliacoesScreen } from '../screens/MinhasAvaliacoesScreen/MinhasAvaliacoesScreen';
+import { PerfilScreen } from '../screens/PerfilScreen/PerfilScreen';
 import { useAuth } from '../contexts/AuthContext';
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
 import { cores } from '../styles/theme';
@@ -48,6 +49,7 @@ export const AppRoutes: React.FC = () => {
         // Rotas autenticadas do Aluno
         <>
           <Stack.Screen name="Principal" component={TabRoutes} />
+          <Stack.Screen name="Início" component={TabRoutes} />
           <Stack.Screen name="CursoDetalhes" component={CursoDetalhesScreen} />
           <Stack.Screen name="AulaPlayer" component={AulaPlayerScreen} />
           <Stack.Screen name="Certificados" component={CertificadosScreen} />
@@ -56,6 +58,7 @@ export const AppRoutes: React.FC = () => {
           <Stack.Screen name="MinhaAssinatura" component={MinhaAssinaturaScreen} />
           <Stack.Screen name="Progresso" component={ProgressoScreen} />
           <Stack.Screen name="Avaliacoes" component={MinhasAvaliacoesScreen} />
+          <Stack.Screen name="Perfil" component={PerfilScreen} />
         </>
       ) : (
         // Rotas públicas de Autenticação
