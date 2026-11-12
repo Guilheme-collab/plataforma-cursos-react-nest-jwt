@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -53,6 +53,14 @@ export const PerfilScreen: React.FC<Props> = ({ navigation }) => {
       carregarEstatisticas();
     }, [carregarEstatisticas])
   );
+
+  useEffect(() => {
+    if (!user) return;
+    const interval = setInterval(() => {
+      carregarEstatisticas();
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [user, carregarEstatisticas]);
 
   const handleDesativarConta = () => {
     Alert.alert(

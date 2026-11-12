@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -126,6 +126,14 @@ export const CursoDetalhesScreen: React.FC<Props> = ({ route, navigation }) => {
       carregarDados();
     }, [carregarDados])
   );
+
+  useEffect(() => {
+    if (!cursoId) return;
+    const interval = setInterval(() => {
+      carregarDados();
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [cursoId, carregarDados]);
 
   const handleMatricularPeloPlano = async () => {
     if (!user?.id) {
