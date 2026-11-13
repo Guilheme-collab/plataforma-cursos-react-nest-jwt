@@ -33,29 +33,8 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) =>
   const [mensagemErro, setMensagemErro] = useState<string | null>(null);
   const [mensagemSucesso, setMensagemSucesso] = useState<string | null>(null);
 
-  const [tecladoVisivel, setTecladoVisivel] = useState(false);
-  const [alturaTeclado, setAlturaTeclado] = useState(0);
-
-  useEffect(() => {
-    const showSub = Keyboard.addListener('keyboardDidShow', (e) => {
-      setTecladoVisivel(true);
-      setAlturaTeclado(e.endCoordinates ? e.endCoordinates.height : 300);
-      setTimeout(() => {
-        scrollRef.current?.scrollToEnd({ animated: true });
-      }, 50);
-      setTimeout(() => {
-        scrollRef.current?.scrollToEnd({ animated: true });
-      }, 250);
-    });
-    const hideSub = Keyboard.addListener('keyboardDidHide', () => {
-      setTecladoVisivel(false);
-      setAlturaTeclado(0);
-    });
-    return () => {
-      showSub.remove();
-      hideSub.remove();
-    };
-  }, []);
+  // Removemos o scrollToEnd automático global que jogava a tela para o final
+  // O ScrollView com keyboardShouldPersistTaps mantém o campo ativo visível naturalmente
 
   const EMAIL_DOMAIN_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9-]{2,}\.[a-zA-Z]{2,}(\.[a-zA-Z]{2,})?$/;
 
@@ -194,10 +173,6 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) =>
                   secureTextEntry={!mostrarSenha}
                   value={senha}
                   onChangeText={setSenha}
-                  onFocus={() => {
-                    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
-                    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 350);
-                  }}
                 />
                 <TouchableOpacity
                   style={styles.botaoOlho}
@@ -224,8 +199,9 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) =>
                   value={confirmarSenha}
                   onChangeText={setConfirmarSenha}
                   onFocus={() => {
-                    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
-                    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 350);
+                    setTimeout(() => {
+                      scrollRef.current?.scrollTo({ y: 150, animated: true });
+                    }, 200);
                   }}
                 />
                 <TouchableOpacity
@@ -276,7 +252,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) =>
             </TouchableOpacity>
           </View>
         </View>
-        <View style={{ height: tecladoVisivel ? Math.max(alturaTeclado, 260) : 60 }} />
+        <View style={{ height: 40 }} />
       </ScrollView>
     </KeyboardAvoidingView>
   );

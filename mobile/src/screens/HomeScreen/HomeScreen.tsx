@@ -52,10 +52,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation, route }) => 
     }
   }, [route?.params?.filtro]);
 
-  // Limpa histórico de notificações nativas e tracking quando o usuário logado muda
+  const usuarioAnteriorIdRef = useRef<number | undefined>(user?.id);
+  // Limpa histórico de notificações nativas e tracking APENAS se o usuário logado realmente mudar de ID
   useEffect(() => {
-    ultimoIdNotificacaoRef.current = null;
-    AppNotificationService.limparHistorico();
+    if (usuarioAnteriorIdRef.current !== user?.id) {
+      usuarioAnteriorIdRef.current = user?.id;
+      ultimoIdNotificacaoRef.current = null;
+      AppNotificationService.limparHistorico();
+    }
   }, [user?.id]);
   const [termoBusca, setTermoBusca] = useState('');
   const [carregando, setCarregando] = useState(true);

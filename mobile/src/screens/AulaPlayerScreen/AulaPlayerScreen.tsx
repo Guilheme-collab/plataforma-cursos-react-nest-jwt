@@ -46,16 +46,20 @@ export const AulaPlayerScreen: React.FC<Props> = ({ route, navigation }) => {
 
   const carregarDadosAula = useCallback(
     async (idDaAula: number) => {
+      const idAula = Number(idDaAula);
+      const idCurso = Number(cursoId);
+      if (!idAula || isNaN(idAula)) return;
+
       try {
         // Só mostra o spinner de carregamento completo na primeira vez
         if (!primeiroLoadRef.current) {
           setCarregando(true);
         }
         const [aulaData, modulosData, aulasData, progressosData, certsData, assData] = await Promise.all([
-          AulaService.findOne(idDaAula),
-          ModuloService.findAll(),
-          AulaService.findAll(),
-          ProgressoService.findAll(),
+          AulaService.findOne(idAula),
+          ModuloService.findAll().catch(() => []),
+          AulaService.findAll().catch(() => []),
+          ProgressoService.findAll().catch(() => []),
           CertificadoService.findAll().catch(() => []),
           AssinaturaService.findAll().catch(() => []),
         ]);
@@ -65,7 +69,7 @@ export const AulaPlayerScreen: React.FC<Props> = ({ route, navigation }) => {
         const modulo = modulosData.find((m) => m.id === aulaData.moduloId) || null;
         setModuloAtual(modulo);
 
-        const modulosDoCurso = modulosData.filter((m) => m.cursoId === cursoId);
+        const modulosDoCurso = modulosData.filter((m) => Number(m.cursoId) === idCurso);
         const modulosIds = modulosDoCurso.map((m) => m.id);
         const aulasOrdenadas = aulasData
           .filter((a) => modulosIds.includes(a.moduloId))
@@ -74,7 +78,7 @@ export const AulaPlayerScreen: React.FC<Props> = ({ route, navigation }) => {
 
         if (user?.id) {
           const progresso = progressosData.find(
-            (p) => p.usuarioId === user.id && p.aulaId === idDaAula
+            (p) => p.usuarioId === user.id && p.aulaId === idAula
           );
           setProgressoExistente(progresso || null);
 
@@ -87,17 +91,17 @@ export const AulaPlayerScreen: React.FC<Props> = ({ route, navigation }) => {
           const estaAulaConcluida = progresso?.status === 'Concluído';
           const todasConcluidas =
             aulasOrdenadas.length > 0 &&
-            aulasOrdenadas.every((a) => concluidasSet.has(a.id) || (a.id === idDaAula && estaAulaConcluida));
+            aulasOrdenadas.every((a) => concluidasSet.has(a.id) || (a.id === idAula && estaAulaConcluida));
           setCursoCompleto(todasConcluidas && estaAulaConcluida);
 
           // Verificar cota de certificados da assinatura para este curso
           const meusCertsDoCurso = (certsData as any[]).filter(
-            (c: any) => c.usuarioId === user.id && c.cursoId === cursoId
+            (c: any) => c.usuarioId === user.id && Number(c.cursoId) === idCurso
           );
           const minhasAssDoCurso = (assData as any[]).filter(
             (a: any) =>
               a.usuarioId === user.id &&
-              (!a.plano?.planosCursos?.length || a.plano.planosCursos.some((pc: any) => pc.cursoId === cursoId))
+              (!a.plano?.planosCursos?.length || a.plano.planosCursos.some((pc: any) => Number(pc.cursoId) === idCurso))
           );
           // Certificado emitido se já existe ao menos 1 certificado para este curso e esta conta de assinaturas esgotou a cota
           // OU se simplesmente já emitiu e não tem assinatura válida (quota esgotada)
@@ -108,7 +112,9 @@ export const AulaPlayerScreen: React.FC<Props> = ({ route, navigation }) => {
         }
       } catch (error) {
         console.error('Erro ao carregar aula:', error);
-        Alert.alert('Erro', 'Não foi possível carregar os detalhes da aula.');
+        if (!primeiroLoadRef.current) {
+          Alert.alert('Erro', 'Não foi possível carregar os detalhes da aula.');
+        }
       } finally {
         primeiroLoadRef.current = true;
         setCarregando(false);

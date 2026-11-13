@@ -49,6 +49,9 @@ export const CursoDetalhesScreen: React.FC<Props> = ({ route, navigation }) => {
   const primeiroLoadRef = useRef(false);
 
   const carregarDados = useCallback(async () => {
+    const idCurso = Number(cursoId);
+    if (!idCurso || isNaN(idCurso)) return;
+
     try {
       // Só exibe o spinner completo na primeira vez
       if (!primeiroLoadRef.current) {
@@ -64,20 +67,20 @@ export const CursoDetalhesScreen: React.FC<Props> = ({ route, navigation }) => {
         assinaturasData,
         planosData,
       ] = await Promise.all([
-        CursoService.findOne(cursoId),
-        ModuloService.findAll(),
-        AulaService.findAll(),
-        MatriculaService.findAll(),
-        ProgressoService.findAll(),
-        AvaliacaoService.findAll(),
-        AssinaturaService.findAll(),
-        PlanoService.findAll(),
+        CursoService.findOne(idCurso),
+        ModuloService.findAll().catch(() => []),
+        AulaService.findAll().catch(() => []),
+        MatriculaService.findAll().catch(() => []),
+        ProgressoService.findAll().catch(() => []),
+        AvaliacaoService.findAll().catch(() => []),
+        AssinaturaService.findAll().catch(() => []),
+        PlanoService.findAll().catch(() => []),
       ]);
 
       setCurso(cursoData);
 
       const modulosDoCurso = modulosData
-        .filter((m) => m.cursoId === cursoId)
+        .filter((m) => Number(m.cursoId) === idCurso)
         .sort((a, b) => a.ordem - b.ordem);
       setModulos(modulosDoCurso);
 
@@ -89,7 +92,7 @@ export const CursoDetalhesScreen: React.FC<Props> = ({ route, navigation }) => {
 
       if (user?.id) {
         const minhaMatricula = matriculasData.find(
-          (m) => m.usuarioId === user.id && m.cursoId === cursoId
+          (m) => m.usuarioId === user.id && Number(m.cursoId) === idCurso
         );
         setMatriculado(!!minhaMatricula);
 
@@ -102,9 +105,9 @@ export const CursoDetalhesScreen: React.FC<Props> = ({ route, navigation }) => {
         const temPlano = assinaturasValidas.some((ass) => {
           const plano = planosData.find((p) => p.id === ass.planoId);
           if (!plano) return false;
-          const idsCursos = (plano.planosCursos?.map((pc) => pc.cursoId) || plano.cursosIds) || [];
+          const idsCursos = (plano.planosCursos?.map((pc) => Number(pc.cursoId)) || plano.cursosIds?.map(Number)) || [];
           if (idsCursos.length > 0) {
-            return idsCursos.includes(cursoId);
+            return idsCursos.includes(idCurso);
           }
           return true; // Se o plano não limitar cursos específicos, cobre toda a plataforma
         });
@@ -116,11 +119,14 @@ export const CursoDetalhesScreen: React.FC<Props> = ({ route, navigation }) => {
         setAulasConcluidasIds(concluidas);
       }
 
-      const avaliacoesDoCurso = avaliacoesData.filter((av) => av.cursoId === cursoId);
+      const avaliacoesDoCurso = avaliacoesData.filter((av) => Number(av.cursoId) === idCurso);
       setAvaliacoes(avaliacoesDoCurso);
     } catch (error) {
       console.error('Erro ao carregar detalhes do curso:', error);
-      Alert.alert('Erro', 'Não foi possível carregar os detalhes do curso.');
+      // Só exibe popup se for na carga inicial e o curso principal falhar
+      if (!primeiroLoadRef.current) {
+        Alert.alert('Erro', 'Não foi possível carregar os detalhes do curso.');
+      }
     } finally {
       primeiroLoadRef.current = true;
       setCarregando(false);

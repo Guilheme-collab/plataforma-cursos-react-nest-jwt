@@ -14,6 +14,9 @@ Notifications.setNotificationHandler({
 
 // Cache em memória dos IDs já notificados nativamente nesta sessão (evita duplicações no celular)
 const idsNotificados = new Set<number>();
+let ultimoIdDisparado: number | null = null;
+let ultimoTimestampDisparo = 0;
+let processandoDisparo = false;
 
 export const AppNotificationService = {
   /**
@@ -57,20 +60,31 @@ export const AppNotificationService = {
 
   /**
    * Dispara notificação nativa na barra de notificações do celular (com apito e vibração)
-   * Possui trava estrita anti-duplicação por ID
+   * Possui trava estrita anti-duplicação atômica e identifier único no sistema operacional
    */
   dispararNotificacaoLocal: async (notif: Notificacao) => {
     if (!notif || !notif.id) return;
 
-    // Se já foi disparada nesta sessão, não repete
-    if (idsNotificados.has(notif.id)) {
+    const agora = Date.now();
+    // Trava estrita: se já disparou esse ID ou se disparou o mesmo ID nos últimos 15 segundos
+    if (
+      idsNotificados.has(notif.id) ||
+      (ultimoIdDisparado === notif.id && agora - ultimoTimestampDisparo < 15000)
+    ) {
       return;
     }
+
+    if (processandoDisparo) return;
+    processandoDisparo = true;
+
     idsNotificados.add(notif.id);
+    ultimoIdDisparado = notif.id;
+    ultimoTimestampDisparo = agora;
 
     try {
       const extras = typeof notif.dadosExtras === 'object' && notif.dadosExtras !== null ? notif.dadosExtras : {};
       await Notifications.scheduleNotificationAsync({
+        identifier: `ead_notif_${notif.id}`,
         content: {
           title: notif.titulo,
           body: notif.mensagem,
@@ -83,13 +97,17 @@ export const AppNotificationService = {
       });
     } catch (error) {
       console.warn('Erro ao disparar notificação nativa no celular:', error);
+    } finally {
+      processandoDisparo = false;
     }
   },
 
   /**
-   * Limpa o histórico de IDs notificados (útil no logout)
+   * Limpa o histórico de IDs notificados (apenas no logout)
    */
   limparHistorico: () => {
     idsNotificados.clear();
+    ultimoIdDisparado = null;
+    ultimoTimestampDisparo = 0;
   },
 };
