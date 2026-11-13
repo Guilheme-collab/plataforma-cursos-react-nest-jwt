@@ -7,6 +7,7 @@ import { CursoService } from '../../services/curso.service';
 import { ModuloService } from '../../services/modulo.service';
 import { AulaService } from '../../services/aula.service';
 import { ProgressoService } from '../../services/progresso.service';
+import { AssinaturaService } from '../../services/assinatura.service';
 import { Certificado } from '../../models/certificado.model';
 import { Curso } from '../../models/curso.model';
 import { toast } from 'react-toastify';
@@ -17,6 +18,9 @@ interface CursoProgressoInfo {
   aulasConcluidas: number;
   porcentagem: number;
   temCertificado: boolean;
+  totalAssinaturas: number;
+  totalCertificados: number;
+  podeEmitirNovo: boolean;
 }
 
 export const CertificadosPages = () => {
@@ -37,17 +41,17 @@ export const CertificadosPages = () => {
       setLista(userCertificates);
 
       if (!isAdmin && user?.id) {
-        // Carregar cursos, módulos, aulas e progresso para o Aluno
-        const [cursos, modulos, aulas, progressos] = await Promise.all([
+        // Carregar cursos, módulos, aulas, progresso e assinaturas para o Aluno
+        const [cursos, modulos, aulas, progressos, assinaturas] = await Promise.all([
           CursoService.findAll().catch(() => []),
           ModuloService.findAll().catch(() => []),
           AulaService.findAll().catch(() => []),
           ProgressoService.findAll().catch(() => []),
+          AssinaturaService.findAll().catch(() => []),
         ]);
 
         const userProgressos = progressos.filter((p: any) => p.usuarioId === user.id && p.status === 'Concluído');
         const userProgressAulaIds = new Set(userProgressos.map((p: any) => p.aulaId));
-        const userCertificateCursoIds = new Set(userCertificates.map((c: any) => c.cursoId));
 
         const infoList: CursoProgressoInfo[] = cursos.map(curso => {
           const modulosCurso = modulos.filter((m: any) => m.cursoId === curso.id);
@@ -57,7 +61,18 @@ export const CertificadosPages = () => {
 
           const aulasConcluidas = aulasCurso.filter((a: any) => userProgressAulaIds.has(a.id)).length;
           const porcentagem = totalAulas > 0 ? Math.round((aulasConcluidas / totalAulas) * 100) : 0;
-          const temCertificado = userCertificateCursoIds.has(curso.id);
+
+          // Regra de Cotas de Certificado por Assinatura de Plano:
+          const assinaturasDoCurso = assinaturas.filter((a: any) =>
+            a.usuarioId === user.id &&
+            (!a.plano?.planosCursos?.length || a.plano.planosCursos.some((pc: any) => pc.cursoId === curso.id))
+          );
+          const certificadosDoCurso = userCertificates.filter((c: any) => c.cursoId === curso.id);
+
+          const totalAssinaturas = assinaturasDoCurso.length;
+          const totalCertificados = certificadosDoCurso.length;
+          const podeEmitirNovo = totalAssinaturas > totalCertificados;
+          const temCertificado = totalCertificados > 0;
 
           return {
             curso,
@@ -65,6 +80,9 @@ export const CertificadosPages = () => {
             aulasConcluidas,
             porcentagem,
             temCertificado,
+            totalAssinaturas,
+            totalCertificados,
+            podeEmitirNovo,
           };
         });
 
@@ -213,11 +231,7 @@ export const CertificadosPages = () => {
                     </div>
 
                     <div>
-                      {info.temCertificado ? (
-                        <button className="btn btn-outline-success btn-sm w-100 rounded-pill fw-bold" disabled>
-                          <i className="bi bi-patch-check-fill me-1"></i> Certificado Emitido
-                        </button>
-                      ) : info.porcentagem === 100 ? (
+                      {info.podeEmitirNovo && info.porcentagem === 100 ? (
                         <button
                           onClick={() => handleSolicitarCertificado(info)}
                           disabled={issuingCourseId === info.curso.id}
@@ -226,8 +240,29 @@ export const CertificadosPages = () => {
                           {issuingCourseId === info.curso.id ? (
                             <span><span className="spinner-border spinner-border-sm me-1"></span> Gerando...</span>
                           ) : (
-                            <span><i className="bi bi-award-fill me-1"></i> Emitir Meu Certificado</span>
+                            <span>
+                              <i className="bi bi-award-fill me-1"></i>
+                              {info.totalCertificados > 0
+                                ? `Emitir Novo Certificado (${info.totalCertificados + 1}ª Via)`
+                                : 'Emitir Meu Certificado'}
+                            </span>
                           )}
+                        </button>
+                      ) : info.totalAssinaturas === 0 ? (
+                        <button
+                          className="btn btn-secondary btn-sm w-100 rounded-pill fw-bold"
+                          disabled
+                          title="Assine um plano que inclua este curso para liberar certificados"
+                        >
+                          <i className="bi bi-lock-fill me-1"></i> Requer Assinatura de Plano
+                        </button>
+                      ) : info.totalCertificados >= info.totalAssinaturas ? (
+                        <button
+                          className="btn btn-outline-success btn-sm w-100 rounded-pill fw-bold"
+                          disabled
+                          title="Você já emitiu o certificado deste curso nesta assinatura. Assine o plano novamente para liberar outra emissão."
+                        >
+                          <i className="bi bi-patch-check-fill me-1"></i> Certificado Emitido ({info.totalCertificados}/{info.totalAssinaturas})
                         </button>
                       ) : (
                         <button

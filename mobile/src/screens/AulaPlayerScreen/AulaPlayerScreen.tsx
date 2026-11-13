@@ -15,6 +15,7 @@ import { AulaService } from '../../services/aula.service';
 import { ModuloService } from '../../services/modulo.service';
 import { ProgressoService } from '../../services/progresso.service';
 import { CertificadoService } from '../../services/certificado.service';
+import { AssinaturaService } from '../../services/assinatura.service';
 import { Aula, Modulo, ProgressoAula } from '../../models';
 import { cores } from '../../styles/theme';
 import { styles } from './AulaPlayerScreen.styles';
@@ -38,16 +39,20 @@ export const AulaPlayerScreen: React.FC<Props> = ({ route, navigation }) => {
   const [salvandoProgresso, setSalvandoProgresso] = useState(false);
   const [carregando, setCarregando] = useState(true);
   const [cursoCompleto, setCursoCompleto] = useState(false);
+  const [certificadoEmitido, setCertificadoEmitido] = useState(false);
+  const [gerandoCertificado, setGerandoCertificado] = useState(false);
 
   const carregarDadosAula = useCallback(
     async (idDaAula: number) => {
       try {
         setCarregando(true);
-        const [aulaData, modulosData, aulasData, progressosData] = await Promise.all([
+        const [aulaData, modulosData, aulasData, progressosData, certsData, assData] = await Promise.all([
           AulaService.findOne(idDaAula),
           ModuloService.findAll(),
           AulaService.findAll(),
           ProgressoService.findAll(),
+          CertificadoService.findAll().catch(() => []),
+          AssinaturaService.findAll().catch(() => []),
         ]);
 
         setAulaAtual(aulaData);
@@ -79,6 +84,18 @@ export const AulaPlayerScreen: React.FC<Props> = ({ route, navigation }) => {
             aulasOrdenadas.length > 0 &&
             aulasOrdenadas.every((a) => concluidasSet.has(a.id) || (a.id === idDaAula && estaAulaConcluida));
           setCursoCompleto(todasConcluidas && estaAulaConcluida);
+
+          // Verificar cota de certificados da assinatura para este curso
+          const meusCertsDoCurso = (certsData as any[]).filter(
+            (c: any) => c.usuarioId === user.id && c.cursoId === cursoId
+          );
+          const minhasAssDoCurso = (assData as any[]).filter(
+            (a: any) =>
+              a.usuarioId === user.id &&
+              (!a.plano?.planosCursos?.length || a.plano.planosCursos.some((pc: any) => pc.cursoId === cursoId))
+          );
+          const jaEmitiu = meusCertsDoCurso.length >= minhasAssDoCurso.length && minhasAssDoCurso.length > 0;
+          setCertificadoEmitido(jaEmitiu);
         }
       } catch (error) {
         console.error('Erro ao carregar aula:', error);
@@ -139,14 +156,17 @@ export const AulaPlayerScreen: React.FC<Props> = ({ route, navigation }) => {
   };
 
   const handleGerarCertificado = async () => {
-    if (!user?.id) return;
+    if (!user?.id || gerandoCertificado) return;
     try {
+      setGerandoCertificado(true);
       const codigo = `CERT-${Math.random().toString(36).substring(2, 9).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
       await CertificadoService.create({
         usuarioId: user.id,
         cursoId,
         codigoVerificacao: codigo,
       });
+
+      setCertificadoEmitido(true);
 
       Alert.alert(
         '🎓 Certificado Emitido!',
@@ -167,7 +187,10 @@ export const AulaPlayerScreen: React.FC<Props> = ({ route, navigation }) => {
       );
     } catch (error: any) {
       console.error('Erro ao emitir certificado:', error);
-      Alert.alert('Erro', 'Não foi possível emitir o certificado no momento.');
+      const msg = error?.response?.data?.message || 'Não foi possível emitir o certificado no momento.';
+      Alert.alert('Certificado', Array.isArray(msg) ? msg[0] : msg);
+    } finally {
+      setGerandoCertificado(false);
     }
   };
 
@@ -341,18 +364,47 @@ export const AulaPlayerScreen: React.FC<Props> = ({ route, navigation }) => {
 
         {cursoCompleto && (
           <View style={styles.cardCertificadoLiberado}>
-            <Ionicons name="ribbon" size={36} color={cores.aviso} />
-            <Text style={styles.certificadoLiberadoTitulo}>Parabéns! Todas as aulas concluídas!</Text>
-            <Text style={styles.certificadoLiberadoTexto}>
-              Você finalizou 100% deste curso. Já pode emitir seu certificado de conclusão oficial.
+            <Ionicons
+              name={certificadoEmitido ? 'checkmark-circle' : 'ribbon'}
+              size={36}
+              color={certificadoEmitido ? '#10B981' : cores.aviso}
+            />
+            <Text style={styles.certificadoLiberadoTitulo}>
+              {certificadoEmitido ? 'Certificado Já Emitido!' : 'Parabéns! Todas as aulas concluídas!'}
             </Text>
-            <TouchableOpacity
-              style={styles.botaoGerarCertificado}
-              onPress={handleGerarCertificado}
-              activeOpacity={0.85}
-            >
-              <Text style={styles.botaoGerarCertificadoTexto}>Gerar Certificado Agora</Text>
-            </TouchableOpacity>
+            <Text style={styles.certificadoLiberadoTexto}>
+              {certificadoEmitido
+                ? 'Você já emitiu o certificado deste curso correspondente à sua assinatura atual. Para emitir uma nova via ou novo certificado deste curso, realize uma nova assinatura do plano.'
+                : 'Você finalizou 100% deste curso. Já pode emitir seu certificado de conclusão oficial.'}
+            </Text>
+            {certificadoEmitido ? (
+              <TouchableOpacity
+                style={[styles.botaoGerarCertificado, { backgroundColor: '#10B981' }]}
+                onPress={() => {
+                  try {
+                    navigation.navigate('Principal', { screen: 'Certificados' });
+                  } catch {
+                    navigation.navigate('Certificados');
+                  }
+                }}
+                activeOpacity={0.85}
+              >
+                <Text style={styles.botaoGerarCertificadoTexto}>Ver Meus Certificados</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                style={[styles.botaoGerarCertificado, gerandoCertificado && styles.botaoNavegarDesabilitado]}
+                onPress={handleGerarCertificado}
+                disabled={gerandoCertificado}
+                activeOpacity={0.85}
+              >
+                {gerandoCertificado ? (
+                  <ActivityIndicator color={cores.branco} />
+                ) : (
+                  <Text style={styles.botaoGerarCertificadoTexto}>Gerar Certificado Agora</Text>
+                )}
+              </TouchableOpacity>
+            )}
           </View>
         )}
       </ScrollView>

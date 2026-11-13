@@ -31,6 +31,16 @@ export class CertificadoService {
         throw new NotFoundException('Curso informado não foi encontrado.');
       }
 
+      // Buscar o usuário
+      const usuario = await this.prisma.usuario.findUnique({
+        where: { id: usuarioId },
+        select: { id: true, role: true, nomeCompleto: true },
+      });
+
+      if (!usuario) {
+        throw new NotFoundException('Aluno informado não foi encontrado.');
+      }
+
       // Extrair IDs de todas as aulas do curso
       const todasAulas = curso.modulos.flatMap(m => m.aulas);
       const totalAulas = todasAulas.length;
@@ -55,7 +65,55 @@ export class CertificadoService {
         }
       }
 
-      // 2. Atualizar a matrícula do aluno como concluída
+      // 2. Regra Estrita de Cotas de Certificado por Assinatura de Plano:
+      // Cada assinatura de um plano dá direito à emissão de 1 certificado por curso daquele plano.
+      // Ao esgotar os certificados dos cursos daquela assinatura, só é possível tirar mais assinando novamente.
+      if (usuario.role !== 'ADMIN') {
+        const assinaturasDoAluno = await this.prisma.assinatura.findMany({
+          where: { usuarioId },
+          include: {
+            plano: {
+              include: {
+                planosCursos: true,
+              },
+            },
+          },
+          orderBy: { id: 'asc' },
+        });
+
+        // Filtra as assinaturas cujos planos cobrem este curso
+        const assinaturasComEsseCurso = assinaturasDoAluno.filter((ass) => {
+          if (!ass.plano) return false;
+          const cursosDoPlano = ass.plano.planosCursos || [];
+          if (cursosDoPlano.length === 0) {
+            // Planos com acesso irrestrito/global cobrem todos os cursos
+            return true;
+          }
+          return cursosDoPlano.some((pc) => pc.cursoId === cursoId);
+        });
+
+        if (assinaturasComEsseCurso.length === 0) {
+          throw new ConflictException(
+            `Não é possível emitir o certificado. Você não possui nenhuma assinatura para um plano que inclua o curso "${curso.titulo}". Assine um plano para liberar seus certificados!`
+          );
+        }
+
+        // Quantos certificados este aluno já emitiu para este curso?
+        const certificadosJaEmitidos = await this.prisma.certificado.count({
+          where: {
+            usuarioId,
+            cursoId,
+          },
+        });
+
+        if (certificadosJaEmitidos >= assinaturasComEsseCurso.length) {
+          throw new ConflictException(
+            `Você já emitiu o certificado do curso "${curso.titulo}" para a sua assinatura atual (${certificadosJaEmitidos}/${assinaturasComEsseCurso.length}). Para emitir um novo certificado deste curso, é necessário realizar uma nova assinatura do plano.`
+          );
+        }
+      }
+
+      // 3. Atualizar a matrícula do aluno como concluída
       await this.prisma.matricula.updateMany({
         where: { usuarioId, cursoId },
         data: { dataConclusao: new Date() },

@@ -141,6 +141,26 @@ async function main() {
     console.log('✅ Plano padrão criado: Plano Pro Acesso Total');
   }
 
+  // Vincula o curso ao Plano Pro Acesso Total se não estiver
+  const vinculoPlanoCurso = await prisma.planoCurso.findUnique({
+    where: {
+      planoId_cursoId: {
+        planoId: plano.id,
+        cursoId: curso.id,
+      },
+    },
+  });
+
+  if (!vinculoPlanoCurso) {
+    await prisma.planoCurso.create({
+      data: {
+        planoId: plano.id,
+        cursoId: curso.id,
+      },
+    });
+    console.log('✅ Curso vinculado ao Plano Pro Acesso Total.');
+  }
+
   // 7. Sistema de notificações opera exclusivamente em tempo de execução via mensageria Kafka
   console.log('✅ Sistema pronto para mensageria de notificações via Kafka.');
 

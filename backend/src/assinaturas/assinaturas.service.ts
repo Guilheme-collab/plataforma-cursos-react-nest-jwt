@@ -63,14 +63,28 @@ export class AssinaturaService {
   async findAll() {
     return this.prisma.assinatura.findMany({
       orderBy: { id: 'desc' },
-      include: { usuario: true, plano: true },
+      include: {
+        usuario: true,
+        plano: {
+          include: {
+            planosCursos: true,
+          },
+        },
+      },
     });
   }
 
   async findOne(id: number) {
     const record = await this.prisma.assinatura.findUnique({
       where: { id },
-      include: { usuario: true, plano: true },
+      include: {
+        usuario: true,
+        plano: {
+          include: {
+            planosCursos: true,
+          },
+        },
+      },
     });
     if (!record) {
       throw new NotFoundException('Assinatura não encontrada.');
