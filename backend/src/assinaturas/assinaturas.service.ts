@@ -62,6 +62,7 @@ export class AssinaturaService {
 
   async findAll() {
     return this.prisma.assinatura.findMany({
+      orderBy: { id: 'desc' },
       include: { usuario: true, plano: true },
     });
   }

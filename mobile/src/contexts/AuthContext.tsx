@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Usuario } from '../models';
 import { AuthService } from '../services/auth.service';
 import { AppNotificationService } from '../services/notification.service';
+import { setCachedToken } from '../services/api';
 
 interface AuthContextData {
   user: Usuario | null;
@@ -29,6 +30,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const storedUser = await AsyncStorage.getItem('@plataforma_user');
 
         if (storedToken && storedUser) {
+          setCachedToken(storedToken);
           setToken(storedToken);
           setUser(JSON.parse(storedUser));
         }
@@ -44,6 +46,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, pass: string) => {
     const data = await AuthService.login(email.trim().toLowerCase(), pass);
+    setCachedToken(data.access_token);
     setToken(data.access_token);
     setUser(data.user);
     await AsyncStorage.setItem('@plataforma_token', data.access_token);
@@ -58,6 +61,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const reactivate = async (email: string, pass: string) => {
     const data = await AuthService.reactivate(email.trim().toLowerCase(), pass);
+    setCachedToken(data.access_token);
     setToken(data.access_token);
     setUser(data.user);
     await AsyncStorage.setItem('@plataforma_token', data.access_token);
@@ -67,12 +71,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     try {
+      setCachedToken(null);
       AppNotificationService.limparHistorico();
       setToken(null);
       setUser(null);
       await AsyncStorage.multiRemove(['@plataforma_token', '@plataforma_user']);
     } catch (error) {
       console.warn('Erro ao limpar sessão:', error);
+      setCachedToken(null);
       AppNotificationService.limparHistorico();
       setToken(null);
       setUser(null);

@@ -58,6 +58,7 @@ export class CursoService {
 
   async findAll() {
     return this.prisma.curso.findMany({
+      orderBy: { id: 'desc' },
       include: {
         instrutor: true,
         categoria: true,

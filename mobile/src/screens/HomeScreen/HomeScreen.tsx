@@ -51,6 +51,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation, route }) => 
       setFiltroAtivo(route.params.filtro);
     }
   }, [route?.params?.filtro]);
+
+  // Limpa histórico de notificações nativas e tracking quando o usuário logado muda
+  useEffect(() => {
+    ultimoIdNotificacaoRef.current = null;
+    AppNotificationService.limparHistorico();
+  }, [user?.id]);
   const [termoBusca, setTermoBusca] = useState('');
   const [carregando, setCarregando] = useState(true);
   const [atualizando, setAtualizando] = useState(false);
@@ -71,7 +77,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation, route }) => 
     try {
       const [listaCursos, listaTrilhas, listaModulos, listaMatriculas, listaNotif, contagemNotif] =
         await Promise.all([
-          CursoService.findAll(),
+          CursoService.findAll().catch(() => []),
           TrilhaService.findAll().catch(() => []),
           ModuloService.findAll().catch(() => []),
           MatriculaService.findAll().catch(() => []),
@@ -141,7 +147,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation, route }) => 
       setCarregando(false);
       setAtualizando(false);
     }
-  }, [user, cursos.length, trilhas.length]);
+  }, [user]);
 
   // Recarrega sempre que o usuário foca na tela
   useFocusEffect(

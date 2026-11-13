@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ScrollView,
   KeyboardAvoidingView,
+  Keyboard,
   Platform,
   ActivityIndicator,
 } from 'react-native';
@@ -31,6 +32,15 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) =>
   const [carregando, setCarregando] = useState(false);
   const [mensagemErro, setMensagemErro] = useState<string | null>(null);
   const [mensagemSucesso, setMensagemSucesso] = useState<string | null>(null);
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener('keyboardDidShow', () => {
+      scrollRef.current?.scrollToEnd({ animated: true });
+    });
+    return () => {
+      showSub.remove();
+    };
+  }, []);
 
   const EMAIL_DOMAIN_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9-]{2,}\.[a-zA-Z]{2,}(\.[a-zA-Z]{2,})?$/;
 
@@ -168,6 +178,10 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) =>
                   secureTextEntry={!mostrarSenha}
                   value={senha}
                   onChangeText={setSenha}
+                  onFocus={() => {
+                    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
+                    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 350);
+                  }}
                 />
                 <TouchableOpacity
                   style={styles.botaoOlho}
@@ -194,7 +208,8 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) =>
                   value={confirmarSenha}
                   onChangeText={setConfirmarSenha}
                   onFocus={() => {
-                    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 150);
+                    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
+                    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 350);
                   }}
                 />
                 <TouchableOpacity
@@ -245,6 +260,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) =>
             </TouchableOpacity>
           </View>
         </View>
+        <View style={{ height: 160 }} />
       </ScrollView>
     </KeyboardAvoidingView>
   );

@@ -99,7 +99,7 @@ export const ProgressoScreen: React.FC<Props> = ({ navigation }) => {
       setCarregando(false);
       setAtualizando(false);
     }
-  }, [user?.id, listaCursos.length]);
+  }, [user?.id]);
 
   useFocusEffect(
     useCallback(() => {

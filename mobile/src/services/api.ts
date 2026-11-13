@@ -31,28 +31,43 @@ function resolveDefaultApiUrl(): string {
 
 export const DEFAULT_URL = resolveDefaultApiUrl();
 
+let cachedBaseUrl: string = DEFAULT_URL;
+let cachedToken: string | null = null;
+
+export const setCachedToken = (token: string | null) => {
+  cachedToken = token;
+};
+
 export const api = axios.create({
   baseURL: DEFAULT_URL,
   timeout: 10000,
 });
 
-// Interceptor para injetar dinamicamente a URL configurada e o token JWT
+// Interceptor ultrarrápido para injetar a URL configurada e o token JWT
 api.interceptors.request.use(
   async (config) => {
     try {
-      const savedUrl = await AsyncStorage.getItem(STORAGE_KEY_API_URL);
-      if (savedUrl && savedUrl.trim()) {
-        config.baseURL = savedUrl.trim();
+      if (cachedBaseUrl) {
+        config.baseURL = cachedBaseUrl;
+      } else {
+        const savedUrl = await AsyncStorage.getItem(STORAGE_KEY_API_URL);
+        if (savedUrl && savedUrl.trim()) {
+          cachedBaseUrl = savedUrl.trim();
+          config.baseURL = cachedBaseUrl;
+        }
       }
 
-      const token = await AsyncStorage.getItem('@plataforma_token');
-      if (token && config.headers) {
-        config.headers.Authorization = `Bearer ${token}`;
+      if (cachedToken === null) {
+        cachedToken = await AsyncStorage.getItem('@plataforma_token');
+      }
+
+      if (cachedToken && config.headers) {
+        config.headers.Authorization = `Bearer ${cachedToken}`;
       } else if (config.headers && config.headers.Authorization) {
         delete config.headers.Authorization;
       }
     } catch (error) {
-      console.warn('Erro ao obter dados do AsyncStorage no interceptor:', error);
+      console.warn('Erro ao obter dados de autenticação no interceptor:', error);
     }
     return config;
   },
@@ -69,6 +84,7 @@ api.interceptors.response.use(
 
 export const setApiBaseUrl = async (url: string): Promise<void> => {
   const cleanUrl = url.trim().replace(/\/+$/, ''); // Remove barras finais
+  cachedBaseUrl = cleanUrl;
   api.defaults.baseURL = cleanUrl;
   await AsyncStorage.setItem(STORAGE_KEY_API_URL, cleanUrl);
 };

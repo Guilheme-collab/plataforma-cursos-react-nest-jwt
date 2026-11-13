@@ -141,24 +141,8 @@ async function main() {
     console.log('✅ Plano padrão criado: Plano Pro Acesso Total');
   }
 
-  // 7. Notificação inicial de boas-vindas do Kafka
-  const notifExistente = await prisma.notificacao.findFirst({
-    where: { tipo: 'BOAS_VINDAS' },
-  });
-
-  if (!notifExistente) {
-    await prisma.notificacao.create({
-      data: {
-        usuarioId: null,
-        roleDestino: 'ADMIN',
-        titulo: '🎉 Apache Kafka Ativo',
-        mensagem: 'Sistema de mensageria Apache Kafka ativo. Cursos, trilhas e módulos integrados em tempo real.',
-        tipo: 'BOAS_VINDAS',
-        lida: false,
-      },
-    });
-    console.log('✅ Notificação inicial de boas-vindas do Kafka registrada.');
-  }
+  // 7. Sistema de notificações opera exclusivamente em tempo de execução via mensageria Kafka
+  console.log('✅ Sistema pronto para mensageria de notificações via Kafka.');
 
   console.log('🌱 Seed finalizado com sucesso!');
 }

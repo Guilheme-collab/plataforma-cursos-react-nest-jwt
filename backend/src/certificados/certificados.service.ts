@@ -120,6 +120,7 @@ export class CertificadoService {
 
   async findAll() {
     return this.prisma.certificado.findMany({
+      orderBy: { id: 'desc' },
       include: { usuario: true, curso: true, trilha: true },
     });
   }

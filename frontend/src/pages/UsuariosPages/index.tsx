@@ -80,10 +80,24 @@ export const UsuariosPages: React.FC = () => {
 
   return (
     <div>
-      <div className="d-flex justify-content-between align-items-center mb-4">
+      <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
           <h3 className="fw-bold mb-1" style={{ color: '#2b3674' }}>Gestão de Usuários</h3>
-          <p className="text-muted">Cadastre, edite e gerencie ou exclua permanentemente os usuários da plataforma</p>
+          <p className="text-muted mb-0">Cadastre, edite e gerencie ou exclua permanentemente os usuários da plataforma</p>
+        </div>
+        <div className="d-flex align-items-center gap-2">
+          <span className="badge bg-white text-dark shadow-sm border py-2 px-3 rounded-pill">
+            <i className="bi bi-people-fill text-primary me-2"></i>
+            Total: <strong>{lista.length}</strong>
+          </span>
+          <button
+            type="button"
+            className="btn btn-outline-primary btn-sm rounded-pill px-3 shadow-sm"
+            onClick={() => loadData()}
+            title="Recarregar dados agora"
+          >
+            <i className="bi bi-arrow-clockwise me-1"></i> Atualizar
+          </button>
         </div>
       </div>
       <div className="row">

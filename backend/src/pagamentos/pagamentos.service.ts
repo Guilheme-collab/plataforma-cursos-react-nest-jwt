@@ -67,6 +67,7 @@ export class PagamentoService {
 
   async findAll() {
     return this.prisma.pagamento.findMany({
+      orderBy: { id: 'desc' },
       include: { assinatura: { include: { usuario: true, plano: true } } },
     });
   }

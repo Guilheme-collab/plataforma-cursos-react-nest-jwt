@@ -67,6 +67,7 @@ export class MatriculaService {
 
   async findAll() {
     return this.prisma.matricula.findMany({
+      orderBy: { id: 'desc' },
       include: { usuario: true, curso: true },
     });
   }
