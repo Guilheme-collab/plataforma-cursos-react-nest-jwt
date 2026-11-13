@@ -73,6 +73,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation, route }) => 
     try {
       const maxId = Math.max(...listaNotif.map((n) => n.id));
       if (ultimoIdNotificacaoRef.current !== null) {
+        // Polling normal: detecta notificações com ID maior que o último visto
         const novas = listaNotif.filter(
           (n) => n.id > (ultimoIdNotificacaoRef.current || 0) && !n.lida
         );
@@ -85,7 +86,23 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation, route }) => 
           }, 5000);
         }
       } else {
-        ultimoIdNotificacaoRef.current = maxId;
+        // Primeiro carregamento: notifica push para notificações não lidas criadas
+        // nos últimos 30 segundos (cobre cadastro recente + login imediato)
+        const agora = Date.now();
+        const recentes = listaNotif.filter((n) => {
+          if (n.lida) return false;
+          if (!n.dataCriacao) return false;
+          const criacao = new Date(n.dataCriacao).getTime();
+          return agora - criacao <= 30000; // 30 segundos
+        });
+        if (recentes.length > 0) {
+          const maisRecente = recentes[0];
+          setToastNotificacao(maisRecente);
+          AppNotificationService.dispararNotificacaoLocal(maisRecente);
+          setTimeout(() => {
+            setToastNotificacao(null);
+          }, 5000);
+        }
       }
       ultimoIdNotificacaoRef.current = maxId;
     } finally {
