@@ -33,12 +33,27 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) =>
   const [mensagemErro, setMensagemErro] = useState<string | null>(null);
   const [mensagemSucesso, setMensagemSucesso] = useState<string | null>(null);
 
+  const [tecladoVisivel, setTecladoVisivel] = useState(false);
+  const [alturaTeclado, setAlturaTeclado] = useState(0);
+
   useEffect(() => {
-    const showSub = Keyboard.addListener('keyboardDidShow', () => {
-      scrollRef.current?.scrollToEnd({ animated: true });
+    const showSub = Keyboard.addListener('keyboardDidShow', (e) => {
+      setTecladoVisivel(true);
+      setAlturaTeclado(e.endCoordinates ? e.endCoordinates.height : 300);
+      setTimeout(() => {
+        scrollRef.current?.scrollToEnd({ animated: true });
+      }, 50);
+      setTimeout(() => {
+        scrollRef.current?.scrollToEnd({ animated: true });
+      }, 250);
+    });
+    const hideSub = Keyboard.addListener('keyboardDidHide', () => {
+      setTecladoVisivel(false);
+      setAlturaTeclado(0);
     });
     return () => {
       showSub.remove();
+      hideSub.remove();
     };
   }, []);
 
@@ -106,7 +121,8 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) =>
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 20}
     >
       <View style={styles.topoBarra}>
         <TouchableOpacity
@@ -260,7 +276,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) =>
             </TouchableOpacity>
           </View>
         </View>
-        <View style={{ height: 160 }} />
+        <View style={{ height: tecladoVisivel ? Math.max(alturaTeclado, 260) : 60 }} />
       </ScrollView>
     </KeyboardAvoidingView>
   );

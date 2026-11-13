@@ -104,7 +104,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation, route }) => 
               }, 5000);
             }
           } else {
-            // No primeiro carregamento, só exibe banner se for evento recém-criado (últimos 2 minutos)
+            // No primeiro carregamento, marca o maxId ANTES de disparar notificação
+            // para evitar que chamadas concorrentes disparem o mesmo push duas vezes
+            ultimoIdNotificacaoRef.current = maxId;
+            // Exibe banner apenas se for evento recém-criado (últimos 2 minutos) e não lido
             const agora = Date.now();
             const recenteNaoLida = listaNotif.find((n) => {
               if (n.lida) return false;

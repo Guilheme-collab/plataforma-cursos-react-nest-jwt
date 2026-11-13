@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -41,11 +41,16 @@ export const AulaPlayerScreen: React.FC<Props> = ({ route, navigation }) => {
   const [cursoCompleto, setCursoCompleto] = useState(false);
   const [certificadoEmitido, setCertificadoEmitido] = useState(false);
   const [gerandoCertificado, setGerandoCertificado] = useState(false);
+  // Controla se já foi feito o primeiro carregamento (evita piscar ao navegar entre aulas)
+  const primeiroLoadRef = useRef(false);
 
   const carregarDadosAula = useCallback(
     async (idDaAula: number) => {
       try {
-        setCarregando(true);
+        // Só mostra o spinner de carregamento completo na primeira vez
+        if (!primeiroLoadRef.current) {
+          setCarregando(true);
+        }
         const [aulaData, modulosData, aulasData, progressosData, certsData, assData] = await Promise.all([
           AulaService.findOne(idDaAula),
           ModuloService.findAll(),
@@ -94,13 +99,18 @@ export const AulaPlayerScreen: React.FC<Props> = ({ route, navigation }) => {
               a.usuarioId === user.id &&
               (!a.plano?.planosCursos?.length || a.plano.planosCursos.some((pc: any) => pc.cursoId === cursoId))
           );
-          const jaEmitiu = meusCertsDoCurso.length >= minhasAssDoCurso.length && minhasAssDoCurso.length > 0;
+          // Certificado emitido se já existe ao menos 1 certificado para este curso e esta conta de assinaturas esgotou a cota
+          // OU se simplesmente já emitiu e não tem assinatura válida (quota esgotada)
+          const jaEmitiu =
+            meusCertsDoCurso.length > 0 &&
+            (meusCertsDoCurso.length >= minhasAssDoCurso.length || minhasAssDoCurso.length === 0);
           setCertificadoEmitido(jaEmitiu);
         }
       } catch (error) {
         console.error('Erro ao carregar aula:', error);
         Alert.alert('Erro', 'Não foi possível carregar os detalhes da aula.');
       } finally {
+        primeiroLoadRef.current = true;
         setCarregando(false);
       }
     },

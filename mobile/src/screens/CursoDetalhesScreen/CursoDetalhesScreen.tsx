@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -45,10 +45,15 @@ export const CursoDetalhesScreen: React.FC<Props> = ({ route, navigation }) => {
   const [enviandoAvaliacao, setEnviandoAvaliacao] = useState(false);
   const [processandoMatricula, setProcessandoMatricula] = useState(false);
   const [carregando, setCarregando] = useState(true);
+  // Ref para evitar que reloads silenciosos mostrem spinner
+  const primeiroLoadRef = useRef(false);
 
   const carregarDados = useCallback(async () => {
     try {
-      setCarregando(true);
+      // Só exibe o spinner completo na primeira vez
+      if (!primeiroLoadRef.current) {
+        setCarregando(true);
+      }
       const [
         cursoData,
         modulosData,
@@ -117,6 +122,7 @@ export const CursoDetalhesScreen: React.FC<Props> = ({ route, navigation }) => {
       console.error('Erro ao carregar detalhes do curso:', error);
       Alert.alert('Erro', 'Não foi possível carregar os detalhes do curso.');
     } finally {
+      primeiroLoadRef.current = true;
       setCarregando(false);
     }
   }, [cursoId, user?.id]);

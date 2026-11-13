@@ -225,7 +225,7 @@ export const DashboardPage: React.FC = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {usuarios.slice(-5).reverse().map(u => (
+                        {[...usuarios].sort((a, b) => (b.id || 0) - (a.id || 0)).slice(0, 5).map(u => (
                           <tr key={u.id}>
                             <td className="ps-4 fw-bold text-muted">#{u.id}</td>
                             <td className="fw-bold">
@@ -269,7 +269,7 @@ export const DashboardPage: React.FC = () => {
                   </div>
                 ) : (
                   <div className="list-group list-group-flush">
-                    {cursos.slice(-4).reverse().map(c => (
+                    {[...cursos].sort((a, b) => (b.id || 0) - (a.id || 0)).slice(0, 5).map(c => (
                       <div className="list-group-item px-0 py-3 border-bottom d-flex justify-content-between align-items-center" key={c.id}>
                         <div>
                           <h6 className="fw-bold mb-1" style={{ color: '#2b3674' }}>{c.titulo}</h6>
