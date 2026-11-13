@@ -111,10 +111,8 @@ export const AulaPlayerScreen: React.FC<Props> = ({ route, navigation }) => {
           setCertificadoEmitido(jaEmitiu);
         }
       } catch (error) {
-        console.error('Erro ao carregar aula:', error);
-        if (!primeiroLoadRef.current) {
-          Alert.alert('Erro', 'Não foi possível carregar os detalhes da aula.');
-        }
+        console.warn('Erro ao carregar aula:', error);
+        // Não exibe Alert em recargas: só falha silenciosa
       } finally {
         primeiroLoadRef.current = true;
         setCarregando(false);
@@ -202,7 +200,7 @@ export const AulaPlayerScreen: React.FC<Props> = ({ route, navigation }) => {
         ]
       );
     } catch (error: any) {
-      console.error('Erro ao emitir certificado:', error);
+      console.warn('Erro ao emitir certificado:', error);
       const msg = error?.response?.data?.message || 'Não foi possível emitir o certificado no momento.';
       Alert.alert('Certificado', Array.isArray(msg) ? msg[0] : msg);
     } finally {

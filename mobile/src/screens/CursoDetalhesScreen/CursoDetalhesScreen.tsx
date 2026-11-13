@@ -122,11 +122,8 @@ export const CursoDetalhesScreen: React.FC<Props> = ({ route, navigation }) => {
       const avaliacoesDoCurso = avaliacoesData.filter((av) => Number(av.cursoId) === idCurso);
       setAvaliacoes(avaliacoesDoCurso);
     } catch (error) {
-      console.error('Erro ao carregar detalhes do curso:', error);
-      // Só exibe popup se for na carga inicial e o curso principal falhar
-      if (!primeiroLoadRef.current) {
-        Alert.alert('Erro', 'Não foi possível carregar os detalhes do curso.');
-      }
+      console.warn('Erro ao carregar detalhes do curso:', error);
+      // Erros de recarga silenciosa não interrompem o usuário com popups
     } finally {
       primeiroLoadRef.current = true;
       setCarregando(false);
@@ -139,15 +136,7 @@ export const CursoDetalhesScreen: React.FC<Props> = ({ route, navigation }) => {
     }, [carregarDados])
   );
 
-  useEffect(() => {
-    if (!cursoId) return;
-    const interval = setInterval(() => {
-      carregarDados();
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [cursoId, carregarDados]);
-
-  const handleMatricularPeloPlano = async () => {
+const handleMatricularPeloPlano = async () => {
     if (!user?.id) {
       Alert.alert('Acesso restrito', 'Você precisa estar logado para se matricular.');
       return;
