@@ -22,28 +22,8 @@ export class AssinaturaService {
         include: { usuario: true, plano: true },
       });
 
-      // 📨 Publicar Notificação de Assinatura via Kafka
-      if (novaAssinatura.usuarioId) {
-        // Para o Aluno
-        await this.kafkaService.publicarNotificacao({
-          usuarioId: novaAssinatura.usuarioId,
-          roleDestino: 'USER',
-          titulo: '🎉 Assinatura Ativada com Sucesso!',
-          mensagem: `Seu plano "${novaAssinatura.plano?.nome || 'Plano'}" foi ativado! Aproveite acesso ilimitado a todos os cursos da plataforma.`,
-          tipo: 'PAGAMENTO',
-          dadosExtras: { assinaturaId: novaAssinatura.id, planoId: novaAssinatura.planoId },
-        });
-
-        // Para a Administração
-        await this.kafkaService.publicarNotificacao({
-          usuarioId: null,
-          roleDestino: 'ADMIN',
-          titulo: '💼 Nova Assinatura de Plano',
-          mensagem: `O usuário "${novaAssinatura.usuario?.nomeCompleto || ''}" assinou o plano "${novaAssinatura.plano?.nome || 'Plano'}".`,
-          tipo: 'PAGAMENTO',
-          dadosExtras: { assinaturaId: novaAssinatura.id, usuarioId: novaAssinatura.usuarioId },
-        });
-      }
+      // A notificação oficial para o aluno e administração é gerada pelo PagamentoService
+      // com confirmação de pagamento e ativação do plano, evitando duplicações
 
       return novaAssinatura;
     } catch (error: any) {

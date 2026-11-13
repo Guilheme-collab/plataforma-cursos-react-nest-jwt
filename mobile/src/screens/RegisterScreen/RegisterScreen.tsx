@@ -81,13 +81,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) =>
       setCarregando(true);
       await register(nomeCompleto.trim(), email.trim(), senha);
       setMensagemSucesso('🎉 Conta criada com sucesso! Entrando na plataforma...');
-      setTimeout(() => {
-        try {
-          navigation.replace('Principal');
-        } catch (e) {
-          // AppRoutes troca a pilha automaticamente quando user !== null
-        }
-      }, 1200);
+      // AppRoutes detecta user !== null e transiciona de forma limpa e atômica para Principal
     } catch (error: any) {
       console.warn('Tentativa de cadastro com erro:', error?.response?.data?.message || error?.message);
       const msg = error.response?.data?.message || 'Erro ao realizar cadastro.';

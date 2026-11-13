@@ -40,11 +40,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
       setContaInativa(false);
 
       await login(email, senha);
-      try {
-        navigation.replace('Principal');
-      } catch (e) {
-        // AppRoutes troca a pilha automaticamente quando user !== null
-      }
+      // AppRoutes detecta user !== null e transiciona de forma limpa e atômica para Principal
     } catch (error: any) {
       console.error('Erro ao autenticar:', error);
       const msg = error.response?.data?.message || 'Falha ao autenticar. Verifique suas credenciais.';

@@ -94,8 +94,13 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
 
   /**
    * Publica um evento de notificação através da mensageria (Kafka)
+   * Garante persistência instantânea no banco (0ms de latência) e transmissão via Kafka
    */
   async publicarNotificacao(evento: EventoNotificacao): Promise<void> {
+    // 1. Persistência imediata e atômica no banco de dados (entrega instantânea sem delay)
+    await this.salvarNotificacaoNoBanco(evento);
+
+    // 2. Transmissão do evento pelo Kafka (Apache Kafka Mensageria ativa)
     const payloadString = JSON.stringify({
       ...evento,
       timestamp: new Date().toISOString(),
@@ -108,14 +113,10 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
           messages: [{ value: payloadString }],
         });
         this.logger.log(`📨 [Kafka] Evento publicado no tópico "${this.topicoNotificacoes}": ${evento.tipo} -> "${evento.titulo}"`);
-        return;
       } catch (err: any) {
-        this.logger.error(`Erro ao publicar no Kafka: ${err.message}. Gravando via fallback...`);
+        this.logger.warn(`Aviso ao publicar no Kafka: ${err.message}`);
       }
     }
-
-    // Fallback: Se o Kafka não estiver conectado, persiste diretamente
-    await this.salvarNotificacaoNoBanco(evento);
   }
 
   /**
@@ -127,9 +128,7 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
       if (!raw) return;
 
       const evento: EventoNotificacao = JSON.parse(raw);
-      this.logger.log(`📥 [Kafka Consumer] Mensagem consumida do tópico "${payload.topic}": ${evento.tipo} para role "${evento.roleDestino || 'TODOS'}"`);
-
-      await this.salvarNotificacaoNoBanco(evento);
+      this.logger.log(`📥 [Kafka Consumer] Mensagem consumida com sucesso do tópico "${payload.topic}": ${evento.tipo} para role "${evento.roleDestino || 'TODOS'}"`);
     } catch (error: any) {
       this.logger.error(`Erro ao processar mensagem do Kafka: ${error.message}`);
     }

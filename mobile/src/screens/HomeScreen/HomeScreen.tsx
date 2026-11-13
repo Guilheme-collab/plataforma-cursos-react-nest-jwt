@@ -67,6 +67,32 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation, route }) => 
   const [menuLateralAberto, setMenuLateralAberto] = useState(false);
   const [modalNotificacoesAberto, setModalNotificacoesAberto] = useState(false);
 
+  const processarNotificacoesRecebidas = useCallback((listaNotif: Notificacao[]) => {
+    if (!listaNotif || listaNotif.length === 0 || processandoRef.current) return;
+    processandoRef.current = true;
+    try {
+      const maxId = Math.max(...listaNotif.map((n) => n.id));
+      if (ultimoIdNotificacaoRef.current !== null) {
+        const novas = listaNotif.filter(
+          (n) => n.id > (ultimoIdNotificacaoRef.current || 0) && !n.lida
+        );
+        if (novas.length > 0) {
+          const maisRecente = novas[0];
+          setToastNotificacao(maisRecente);
+          AppNotificationService.dispararNotificacaoLocal(maisRecente);
+          setTimeout(() => {
+            setToastNotificacao(null);
+          }, 5000);
+        }
+      } else {
+        ultimoIdNotificacaoRef.current = maxId;
+      }
+      ultimoIdNotificacaoRef.current = maxId;
+    } finally {
+      processandoRef.current = false;
+    }
+  }, []);
+
   const carregarDados = useCallback(async (silencioso = false) => {
     if (!user) {
       setCarregando(false);
@@ -89,50 +115,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation, route }) => 
           NotificacaoService.countUnread().catch(() => ({ naoLidas: 0 })),
         ]);
 
-      // Alerta instantâneo com banner flutuante no celular ao receber notificação
-      // Usa processandoRef para evitar condição de corrida entre chamadas concorrentes
-      if (listaNotif.length > 0 && !processandoRef.current) {
-        processandoRef.current = true;
-        try {
-          const maxId = Math.max(...listaNotif.map((n) => n.id));
-          if (ultimoIdNotificacaoRef.current !== null) {
-            const novas = listaNotif.filter(
-              (n) => n.id > (ultimoIdNotificacaoRef.current || 0) && !n.lida
-            );
-            if (novas.length > 0) {
-              const maisRecente = novas[0];
-              setToastNotificacao(maisRecente);
-              AppNotificationService.dispararNotificacaoLocal(maisRecente);
-              setTimeout(() => {
-                setToastNotificacao(null);
-              }, 5000);
-            }
-          } else {
-            // No primeiro carregamento, marca o maxId ANTES de disparar notificação
-            // para evitar que chamadas concorrentes disparem o mesmo push duas vezes
-            ultimoIdNotificacaoRef.current = maxId;
-            // Exibe banner apenas se for evento recém-criado (últimos 2 minutos) e não lido
-            const agora = Date.now();
-            const recenteNaoLida = listaNotif.find((n) => {
-              if (n.lida) return false;
-              const diffMs = agora - new Date(n.dataCriacao).getTime();
-              return diffMs < 120000;
-            });
-            if (recenteNaoLida) {
-              setToastNotificacao(recenteNaoLida);
-              AppNotificationService.dispararNotificacaoLocal(recenteNaoLida);
-              setTimeout(() => {
-                setToastNotificacao(null);
-              }, 5000);
-            }
-          }
-          ultimoIdNotificacaoRef.current = maxId;
-        } finally {
-          processandoRef.current = false;
-        }
-      } else if (listaNotif.length === 0 && ultimoIdNotificacaoRef.current === null) {
-        ultimoIdNotificacaoRef.current = 0;
-      }
+      processarNotificacoesRecebidas(listaNotif);
 
       setCursos(listaCursos);
       setTrilhas(listaTrilhas);
@@ -154,7 +137,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation, route }) => 
       setCarregando(false);
       setAtualizando(false);
     }
-  }, [user]);
+  }, [user, processarNotificacoesRecebidas]);
 
   // Recarrega sempre que o usuário foca na tela
   useFocusEffect(
@@ -165,14 +148,31 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation, route }) => 
     }, [user, carregarDados])
   );
 
-  // Polling ultrarrápido a cada 1.5 segundos para entrega instantânea
+  // Polling ultrarrápido instantâneo de 800ms dedicado para notificações
+  // e polling regular de 3.5s para cursos e matrículas
   useEffect(() => {
     if (!user) return;
-    const interval = setInterval(() => {
+    const intervalNotif = setInterval(async () => {
+      try {
+        const [listaNotif, contagem] = await Promise.all([
+          NotificacaoService.findAll(),
+          NotificacaoService.countUnread().catch(() => ({ naoLidas: 0 })),
+        ]);
+        processarNotificacoesRecebidas(listaNotif);
+        setNotificacoes(listaNotif);
+        setNaoLidasCount(contagem.naoLidas);
+      } catch {}
+    }, 800);
+
+    const intervalDados = setInterval(() => {
       carregarDados(true);
-    }, 1500);
-    return () => clearInterval(interval);
-  }, [user, carregarDados]);
+    }, 3500);
+
+    return () => {
+      clearInterval(intervalNotif);
+      clearInterval(intervalDados);
+    };
+  }, [user, carregarDados, processarNotificacoesRecebidas]);
 
   const onRefresh = () => {
     setAtualizando(true);

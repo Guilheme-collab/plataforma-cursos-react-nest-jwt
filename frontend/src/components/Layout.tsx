@@ -121,8 +121,8 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     carregarNotificacoes();
-    // Polling ultrarrápido a cada 1.5 segundos para entrega instantânea
-    const interval = setInterval(carregarNotificacoes, 1500);
+    // Polling ultrarrápido a cada 800ms para entrega verdadeiramente instantânea
+    const interval = setInterval(carregarNotificacoes, 800);
     return () => clearInterval(interval);
   }, [carregarNotificacoes]);
 
