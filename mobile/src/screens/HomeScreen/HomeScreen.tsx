@@ -52,6 +52,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation, route }) => 
     }
   }, [route?.params?.filtro]);
 
+  useEffect(() => {
+    AppNotificationService.inicializar();
+  }, []);
+
   const usuarioAnteriorIdRef = useRef<number | undefined>(user?.id);
   // Limpa histórico de notificações nativas e tracking APENAS se o usuário logado realmente mudar de ID
   useEffect(() => {
@@ -86,19 +90,22 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation, route }) => 
           }, 5000);
         }
       } else {
-        // Primeiro carregamento: notifica push para notificações não lidas criadas
-        // nos últimos 30 segundos (cobre cadastro recente + login imediato)
+        // Primeiro carregamento da tela (ex: novo usuário após cadastro ou login):
+        // 1. Notificação de boas-vindas não lida (BOAS_VINDAS) SEMPRE deve disparar para novos usuários
+        // 2. Qualquer notificação não lida recente criada nos últimos 10 minutos
         const agora = Date.now();
-        const recentes = listaNotif.filter((n) => {
-          if (n.lida) return false;
+        const naoLidas = listaNotif.filter((n) => !n.lida);
+        const boasVindas = naoLidas.find((n) => n.tipo === 'BOAS_VINDAS');
+        const recente = naoLidas.find((n) => {
           if (!n.dataCriacao) return false;
-          const criacao = new Date(n.dataCriacao).getTime();
-          return agora - criacao <= 30000; // 30 segundos
+          const diff = Math.abs(agora - new Date(n.dataCriacao).getTime());
+          return diff <= 10 * 60 * 1000; // 10 minutos
         });
-        if (recentes.length > 0) {
-          const maisRecente = recentes[0];
-          setToastNotificacao(maisRecente);
-          AppNotificationService.dispararNotificacaoLocal(maisRecente);
+
+        const notifParaDisparar = boasVindas || recente;
+        if (notifParaDisparar) {
+          setToastNotificacao(notifParaDisparar);
+          AppNotificationService.dispararNotificacaoLocal(notifParaDisparar);
           setTimeout(() => {
             setToastNotificacao(null);
           }, 5000);

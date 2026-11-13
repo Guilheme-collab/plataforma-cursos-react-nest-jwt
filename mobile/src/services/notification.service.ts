@@ -5,6 +5,7 @@ import { Notificacao } from '../models';
 // Configura como as notificações são tratadas quando o app está aberto ou em segundo plano
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
+    shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: true,
     shouldShowBanner: true,
@@ -92,6 +93,7 @@ export const AppNotificationService = {
           sound: true,
           priority: Notifications.AndroidNotificationPriority.MAX,
           vibrate: [0, 250, 250, 250],
+          ...(Platform.OS === 'android' ? { channelId: 'plataforma-notificacoes' } : {}),
         },
         trigger: null, // Disparo imediato na barra do sistema
       });
